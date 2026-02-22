@@ -1,0 +1,80 @@
+
+POST http://localhost:8000/api/enviar-mensaje
+Content-Type: application/json
+
+{
+    "numero": "59173277937",
+    "mensaje": {
+        "type": "text",
+        "body": "Hola desde mi Backend Laravel"
+    }
+}
+
+### Imagen
+POST http://localhost:8000/api/enviar-mensaje
+Content-Type: application/json
+
+{
+    "numero": "59173277937",
+    "mensaje": {
+        "type": "image",
+        "link": "https://blumbitvirtual.edtics.com/pluginfile.php/4358/course/overviewfiles/Laravel%20y%20Angular%20%2813%29.png"
+    }
+}
+
+### Ubicación
+POST http://localhost:8000/api/enviar-mensaje
+Content-Type: application/json
+
+{
+    "numero": "59173277937",
+    "mensaje": {
+        "type": "location",
+        "latitude": "-16.5",
+        "longitude": "-68.15",
+        "name": "Zona Central",
+        "address": "Av. 123 Calle ABC"
+    }
+}
+
+### documento
+POST http://localhost:8000/api/enviar-mensaje
+Content-Type: application/json
+
+{
+    "numero": "59173277937",
+    "mensaje": {
+        "type": "document",
+        "link": "https://blumbit.iivot.com/uploads/1758556938804-827644277-Temario%20N8N%20(1).pdf",
+        "caption": "Este es el temario del curso\n\nCurso *n8n*",
+        "filename": "temario-n8n.pdf"
+    }
+}
+
+### botones
+POST http://localhost:8000/api/enviar-mensaje
+Content-Type: application/json
+
+{
+    "numero": "59173277937",
+    "mensaje": {
+        "type": "buttons",
+        "body": "Hola Que opción te interesa?",
+        "buttons": [
+            {
+                "type": "reply",
+                "reply": {
+                    "id": "001",
+                    "title": "Frontend"
+                }
+            },
+            {
+                "type": "reply",
+                "reply": {
+                    "id": "002",
+                    "title": "Backend"
+                }
+            }
+        ]
+    }
+}
