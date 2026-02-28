@@ -23,6 +23,9 @@ Route::get('/webhook', function(Request $request){
     return response('Forbidden', 403);
 });
 
+// Webhook Evolution
+Route::post('/webhook-evolution', [whatsappController::class, "recibirMensajeEvolution"]);
+
 // APi OPEN AI
 
 Route::post("/openai/text", [OpenaiController::class, "funRespuestaIA"]);

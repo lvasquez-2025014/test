@@ -17,7 +17,7 @@ class whatsappController extends Controller
         $mensajeData = $request->input('mensaje');
 
         if (!$numero || !$mensajeData) {
-            return response()->json(['success' => false, 'error' => 'Daltan datos'], 400);
+            return response()->json(['success' => false, 'error' => 'Faltan datos'], 400);
         }
         try {
             $respuesta = $this->enviarMensajeWhatsapp($numero, $mensajeData);
@@ -90,7 +90,9 @@ class whatsappController extends Controller
                 break;
         }
 
-        return  Http::withToken($token)->post($url, $payload)->json();
+        return  Http::withToken($token)->withHeaders([
+            'Content-Type' => 'application/json'
+        ])->post($url, $payload)->json();
     }
 
     private function enviarEvolution($number, $data)
@@ -128,6 +130,8 @@ class whatsappController extends Controller
 
                 break;
             case 'document':
+                $url = "{$urlbase}/message/sendMedia/{$instance}";
+
                 $payload['mediatype'] = 'document';
                 $payload['media'] = $data['link'];
                 $payload['fileName'] = ($data['filename'] ?? 'archivo') . ".pdf";
@@ -135,7 +139,7 @@ class whatsappController extends Controller
                 break;
         }
 
-        return  Http::withToken(['apikey' => $apikey])->post($url, $payload)->json();
+        return Http::withHeaders(['apikey' => $apikey])->post($url, $payload)->json();
     }
 
     public function recibirMensaje(Request $request)
@@ -194,6 +198,103 @@ class whatsappController extends Controller
 
         return response('OK ' . $numero, 200);
     }
+
+    
+    public function recibirMensajeEvolution(Request $request)
+    {
+        $data = $request->all();
+
+        // Validar evento correcto
+        if (($data['event'] ?? null) !== 'messages.upsert') {
+            return response('Evento no válido', 200);
+        }
+
+        $msgPropio = $data['data']['key']['fromMe'] ?? true;
+
+        if ($msgPropio) {
+            return response('Mensaje propio', 200);
+        }
+
+        // Obtener número limpio
+        $remoteJid = $data['data']['key']['remoteJid'] ?? null;
+        if (!$remoteJid) return response('Sin número', 200);
+
+        $numero = explode('@', $remoteJid)[0];
+
+        // Detectar tipo de mensaje
+        $mensajeUsuario = "";
+
+        $messageType = $data['data']['messageType'] ?? null;
+        $messageData = $data['data']['message'] ?? [];
+
+        if ($messageType === 'conversation') {
+            $mensajeUsuario = trim($messageData['conversation'] ?? '');
+        }
+
+        if ($messageType === 'extendedTextMessage') {
+            $mensajeUsuario = trim($messageData['extendedTextMessage']['text'] ?? '');
+        }
+
+        if ($messageType === 'buttonsResponseMessage') {
+            $mensajeUsuario = $messageData['buttonsResponseMessage']['selectedButtonId'] ?? '';
+        }
+
+        if (!$mensajeUsuario) {
+            return response('No hay mensaje válido', 200);
+        }
+
+        // ====== AQUI EMPIEZA TU LOGICA ORIGINAL ======
+
+        $context = UserContext::firstOrCreate(
+            ['phone_number' => $numero],
+            ['current_node' => 'main']
+        );
+
+        if ($context->wasRecentlyCreated) {
+            $this->enviarMensajeDinamico($numero, 'main');
+            return response('OK', 200);
+        }
+
+        $opcion = Option::where('chatbot_node_id', $context->current_node)
+            ->where('key', $mensajeUsuario)
+            ->first();
+
+        if (!$opcion) {
+            $respuestaIA = $this->funRespuestaIA($mensajeUsuario);
+            $this->enviarMensajeWhatsapp($numero, [
+                "type" => "text",
+                "body" => $respuestaIA
+            ]);
+
+            return response('OK', 200);
+        }
+
+        if ($opcion->respuesta) {
+            $this->enviarMensajeWhatsapp($numero, $opcion->respuesta);
+        }
+
+        if ($opcion->next_node_id) {
+            $context->update([
+                'current_node' => $opcion->next_node_id
+            ]);
+
+            $this->enviarMensajeDinamico($numero, $opcion->next_node_id);
+        }
+
+        return response('OK', 200);
+    }
+    /*
+    public function recibirMensajeEvolution(Request $request){
+        $data = $request->all();
+        $msgPropio = $data['data']['key']['fromMe'];
+
+        if ($msgPropio) return response('Mi Mensaje', 200);
+
+        $numero =  $data['data']['key']['remoteJid'];
+        $this->enviarMensajeWhatsapp($numero, ["type" => "text", "body" => "Hola Soy un Bot"]);
+        return response('OK', 200);
+    }
+    */
 
 
     public function enviarMensajeDinamico($numero, $nodeId){
@@ -258,7 +359,7 @@ class whatsappController extends Controller
             "messages" => [
                 [
                     "role" => "system",
-                    "content" => "Responde solamante si el cliente necesito asesoramiento por parte de nuestro personal, envia los datos de nuestro asesores si lo solicitan: esta en formato json procesalos y luego envia".$asesores
+                    "content" => "Responde solamante si el cliente necesita asesoramiento por parte de nuestro personal, envia los datos de nuestro asesores si lo solicitan: esta en formato json procesalos y luego envia".$asesores
                 ],
                 [
                     "role" => "user",

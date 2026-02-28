@@ -3,7 +3,7 @@ POST http://localhost:8000/api/enviar-mensaje
 Content-Type: application/json
 
 {
-    "numero": "59173277937",
+    "numero": "59172404619",
     "mensaje": {
         "type": "text",
         "body": "Hola desde mi Backend Laravel"
@@ -15,7 +15,7 @@ POST http://localhost:8000/api/enviar-mensaje
 Content-Type: application/json
 
 {
-    "numero": "59173277937",
+    "numero": "50370850248",
     "mensaje": {
         "type": "image",
         "link": "https://blumbitvirtual.edtics.com/pluginfile.php/4358/course/overviewfiles/Laravel%20y%20Angular%20%2813%29.png"
@@ -27,7 +27,7 @@ POST http://localhost:8000/api/enviar-mensaje
 Content-Type: application/json
 
 {
-    "numero": "59173277937",
+    "numero": "50370850248",
     "mensaje": {
         "type": "location",
         "latitude": "-16.5",
@@ -42,7 +42,7 @@ POST http://localhost:8000/api/enviar-mensaje
 Content-Type: application/json
 
 {
-    "numero": "59173277937",
+    "numero": "59172404619",
     "mensaje": {
         "type": "document",
         "link": "https://blumbit.iivot.com/uploads/1758556938804-827644277-Temario%20N8N%20(1).pdf",
@@ -77,4 +77,18 @@ Content-Type: application/json
             }
         ]
     }
+}
+
+### Prueba envio desde Laravel
+### POST http://127.0.0.1:8000/
+
+### Prueba envio de mensaje con Evolution API
+
+POST http://127.0.0.1:7171/message/sendText/whatsapp-1
+Content-Type: application/json
+apikey: 52AA4C85FAE8-4B2C-87EC-275ECE2D87D0
+
+{
+  "number": "59173277937",
+  "text": "Otro Mensaje"
 }
