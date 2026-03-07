@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class UserContext extends Model
 {
-    protected $fillable = ['phone_number', 'current_node', 'ai_history'];
+    protected $fillable = ['phone_number', 'nombre', 'current_node', 'ai_history'];
 
     protected $casts = [
         'ai_history' => "array"

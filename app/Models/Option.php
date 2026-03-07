@@ -8,7 +8,7 @@ class Option extends Model
 {
     protected $fillable = [
         'id',
-        'chabot_node_id',
+        'chatbot_node_id',
         'key',
         'text',
         'respuesta',

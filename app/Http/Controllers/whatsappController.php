@@ -13,6 +13,7 @@ class whatsappController extends Controller
 {
     public function enviarMensaje(Request $request)
     {
+        // return $request;
         $numero = $request->input('numero');
         $mensajeData = $request->input('mensaje');
 
@@ -221,6 +222,8 @@ class whatsappController extends Controller
 
         $numero = explode('@', $remoteJid)[0];
 
+        $nombre = $data['data']["pushName"];
+
         // Detectar tipo de mensaje
         $mensajeUsuario = "";
 
@@ -247,6 +250,7 @@ class whatsappController extends Controller
 
         $context = UserContext::firstOrCreate(
             ['phone_number' => $numero],
+            ['nombre' => $nombre],
             ['current_node' => 'main']
         );
 

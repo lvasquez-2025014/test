@@ -327,6 +327,28 @@ return [
             'label' => 4,
             'label_color' => 'success',
         ],
+        [
+            'text' => 'Constructor 0',
+            'url' => 'chatbot',
+            'icon' => 'far fa-fw fa-users',
+            'label' => 4,
+            'label_color' => 'success',
+        ],
+        [
+            'text' => 'Constructor 1',
+            'url' => 'chatbot/constructor',
+            'icon' => 'far fa-fw fa-users',
+            'label' => 4,
+            'label_color' => 'success',
+        ],
+        
+        [
+            'text' => 'Constructor 2',
+            'url' => 'chatbot/constructor2',
+            'icon' => 'far fa-fw fa-users',
+            'label' => 4,
+            'label_color' => 'success',
+        ],
         ['header' => 'account_settings'],
         [
             'text' => 'profile',

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('user_contexts', function (Blueprint $table) {
             $table->id();
             $table->string("phone_number")->unique();
+            $table->string("nombre")->nullable();
             $table->string("current_node")->default("main");
             $table->json("ai_history")->nullable(); // para el context de OpenAI 
             $table->timestamps();

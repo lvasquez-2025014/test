@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChatbotController;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MensajeController;
@@ -47,3 +48,25 @@ Route::get("/panel-contactos", [MensajeController::class, "panelAdmin"]);
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+
+Route::prefix('chatbot')->group(function () {
+    Route::get("constructor2", [ChatbotController::class, "constructor2"]);
+
+    Route::post('/node/update',[ChatbotController::class,'updateNode2']);
+
+    Route::get('/', [ChatbotController::class,'index'])->name('chatbot.index');
+
+    Route::get('/node/{id}', [ChatbotController::class,'show'])->name('chatbot.show');
+
+    Route::post('/node', [ChatbotController::class,'storeNode'])->name('chatbot.node.store');
+
+    Route::put('/node/{id}', [ChatbotController::class,'updateNode'])->name('chatbot.node.update');
+
+    Route::post('/option', [ChatbotController::class,'storeOption'])->name('chatbot.option.store');
+
+    Route::delete('/option/{id}', [ChatbotController::class,'deleteOption'])->name('chatbot.option.delete');
+
+    Route::get("constructor", [ChatbotController::class, "constructor"]);
+    
+});

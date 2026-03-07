@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\UserContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -36,8 +37,11 @@ class MensajeController extends Controller
         return redirect()->back();
     }
 
-
     public function panelAdmin(){
-        return view("panel-contacto");
+
+        $contactos = UserContext::get();
+
+
+        return view("panel-contacto", compact("contactos"));
     }
 }
