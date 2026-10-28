@@ -1,6 +1,4 @@
-/**
- * Authentication Helper Scripts
- */
+// Toggle para mostrar u ocultar la contraseña en el formulario
 function togglePass(id, btn) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -14,5 +12,5 @@ function togglePass(id, btn) {
     }
 }
 
-// Make togglePass globally available
+// Se deja en el scope global para que los onclick de Blade la encuentren directo
 window.togglePass = togglePass;

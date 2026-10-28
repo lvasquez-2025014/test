@@ -252,11 +252,9 @@
         <div id="floating-feedback" role="status" aria-live="polite" class="floating-feedback"></div>
     </div>
 
-    <!-- =========================================================================
-         1. PANEL: DASHBOARD & ANALÍTICA EN TIEMPO REAL
-         ========================================================================= -->
+    <!-- Dashboard y métricas -->
     <div id="pane-dashboard" class="tab-pane-content">
-        <!-- Grid de 6 KPIs Ejecutivos -->
+        <!-- Indicadores principales -->
         <div class="crm-dashboard-grid" id="dash-section-kpis">
             <div class="crm-stat-card card-kpi-leads">
                 <div class="crm-stat-header">
@@ -424,7 +422,7 @@
                             </div>
                         </div>
                         <span class="badge badge-purple px-2 py-1 small">
-                            <i class="fas fa-bolt mr-1"></i> Ultra Fast
+                            <i class="fas fa-microchip mr-1"></i> Groq LPU
                         </span>
                     </div>
 
@@ -1644,7 +1642,7 @@
     </div>
 
     @if($isAdmin)
-        <!-- MODAL 3: CONFIGURACIÓN INTEGRAL DE EMPRESA Y ESCALA SAAS -->
+        <!-- Modal: ajustes generales de la empresa -->
         <div class="modal fade" id="modalConfigTecnica" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
                 <div class="modal-content saas-modal">
@@ -1655,7 +1653,7 @@
                         <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
                     </div>
 
-                    <!-- Subnavegación de Configuración -->
+                    <!-- Pestañas de configuración -->
                     <div class="p-3 bg-light border-bottom">
                         <div class="crm-subnav" id="settingsModalNav">
                             <button type="button" class="crm-subnav-btn active" data-cfg-tab="general">
@@ -1680,7 +1678,7 @@
                     </div>
 
                     <div class="modal-body p-4" style="max-height: 72vh; overflow-y: auto;">
-                        <!-- TAB 1: GENERAL & WHATSAPP -->
+                        <!-- Ajustes de WhatsApp -->
                         <div id="cfg-pane-general">
                             <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
                                 Parámetros Técnicos WhatsApp Cloud API y Coexistencia
@@ -1722,7 +1720,7 @@
                             </form>
                         </div>
 
-                        <!-- TAB 2: HORARIOS COMERCIALES -->
+                        <!-- Horarios de atención -->
                         <div id="cfg-pane-horarios" class="d-none">
                             <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
                                 Horarios de Atención Comercial y Respuesta Fuera de Horario
@@ -1799,7 +1797,7 @@
                             </form>
                         </div>
 
-                        <!-- TAB 3: DATOS FISCALES & COTIZACIONES -->
+                        <!-- Datos fiscales -->
                         <div id="cfg-pane-fiscal" class="d-none">
                             <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
                                 Datos Fiscales, Moneda e Impuestos para Cotizaciones Oficiales PDF
@@ -1855,13 +1853,13 @@
                             </form>
                         </div>
 
-                        <!-- TAB 4: WEBHOOKS SALIENTES & API REST -->
+                        <!-- Webhooks y API -->
                         <div id="cfg-pane-webhooks" class="d-none">
                             <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
                                 Integración API REST & Disparadores Webhook Salientes
                             </h6>
 
-                            <!-- Subsección API REST -->
+                            <!-- Token de API -->
                             <div class="p-3 mb-4" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
                                 <h6 class="font-weight-bold text-dark mb-1"><i class="fas fa-key text-warning mr-1"></i> Token API REST de la Empresa</h6>
                                 <p class="small text-muted mb-2">Usa este token para conectar Zapier, Make, tu ERP o sitios web con la API REST v1 de tu CRM.</p>
@@ -1877,7 +1875,7 @@
                                 </div>
                             </div>
 
-                            <!-- Subsección Webhook Saliente -->
+                            <!-- Configuración del webhook -->
                             <form id="formConfigWebhook">
                                 <div class="p-3 mb-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -1930,7 +1928,7 @@
                             </form>
                         </div>
 
-                        <!-- TAB 5: USUARIOS & SUB-ROLES -->
+                        <!-- Usuarios del equipo -->
                         <div id="cfg-pane-usuarios" class="d-none">
                             <h6 class="font-weight-bold text-uppercase small text-secondary mb-2" style="letter-spacing: 0.05em;">
                                 Cuentas de Acceso de Empresa y Roles de Asesores
@@ -2014,7 +2012,7 @@
                             </form>
                         </div>
 
-                        {{-- <!-- TAB 6: PLAN & CONSUMO IA -->
+                        {{-- <!-- Plan y consumo IA -->
                         <div id="cfg-pane-plan" class="d-none">
                             <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
                                 Plan Activo y Cuota Mensual de Mensajes IA (Groq LLaMA 3.3)
@@ -2049,7 +2047,7 @@
         </div>
     @endif
 
-    <!-- Configuración desacoplada y datos iniciales JSON para toda la suite CRM -->
+    <!-- Datos y configuración para los scripts del CRM -->
     <div id="blueprint-config" 
          class="blueprint-config-data"
          data-csrf-token="{{ csrf_token() }}" 
