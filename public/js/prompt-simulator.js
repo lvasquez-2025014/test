@@ -1,7 +1,4 @@
-/**
- * AI System Prompt Simulator Component
- * Strict limit: < 1000 lines
- */
+// Simulador para probar respuestas del prompt antes de guardarlo
 document.addEventListener('DOMContentLoaded', function () {
     const configEl = document.getElementById('blueprint-config');
     const csrfToken = configEl?.getAttribute('data-csrf-token') ||

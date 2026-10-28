@@ -1,294 +1,230 @@
-/**
- * Meta WhatsApp Cloud API — Onboarding 100% Responsivo & Minimalista
- * Optimizado para móviles (320px+), tablets, laptops y pantallas de escritorio.
- */
-
 :root {
-    --bg-page: #f9fafb;
-    --card-bg: #ffffff;
-    --border-color: #e5e7eb;
-    --text-primary: #111827;
-    --text-secondary: #4b5563;
-    --text-muted: #9ca3af;
-    --brand-meta: #1877f2;
-    --brand-meta-hover: #166fe5;
+    --bg-body: #f8fafc;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text-main: #0f172a;
+    --text-sub: #475569;
+    --text-muted: #94a3b8;
     --brand-wa: #10b981;
-    --radius-card: 16px;
-    --radius-btn: 10px;
-    --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --brand-wa-dark: #059669;
+    --brand-wa-light: #ecfdf5;
+    --brand-indigo: #4f46e5;
+    --radius-xl: 20px;
+    --radius-lg: 14px;
+    --radius-md: 10px;
+    --shadow-float: 0 20px 40px -15px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(15, 23, 42, 0.05);
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    -webkit-tap-highlight-color: transparent;
-}
-
-html, body {
-    width: 100%;
-    min-height: 100%;
 }
 
 body {
-    font-family: var(--font);
-    background-color: var(--bg-page);
-    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
     min-height: 100vh;
-    min-height: 100dvh; /* Soporte dinámico para barras de navegación móviles (iOS/Android) */
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    padding: 24px 16px;
 }
 
-/* Tarjeta Central Responsiva */
-.minimal-container {
+.onboarding-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-float);
+    max-width: 520px;
     width: 100%;
-    max-width: 430px;
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-card);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
-    padding: 36px 30px;
+    overflow: hidden;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-hero {
+    background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+    padding: 36px 30px 30px;
+    color: #ffffff;
     text-align: center;
-    margin: auto 0; /* Permite scroll natural en pantallas cortas o modo horizontal */
-    word-break: break-word;
-    overflow-wrap: anywhere;
+    position: relative;
 }
 
-/* Icono Superior Fluido */
-.minimal-icon {
-    width: clamp(48px, 12vw, 56px);
-    height: clamp(48px, 12vw, 56px);
-    border-radius: 14px;
-    background: #ecfdf5;
-    color: var(--brand-wa);
-    display: flex;
+.brand-badge {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    font-size: clamp(1.35rem, 4vw, 1.6rem);
-    margin: 0 auto 18px;
-    flex-shrink: 0;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Tipografía Adaptable (Fluid Typography) */
-.minimal-title {
-    font-size: clamp(1.2rem, 4.5vw, 1.45rem);
-    font-weight: 700;
-    color: var(--text-primary);
-    letter-spacing: -0.025em;
+.card-hero h1 {
+    font-size: 1.55rem;
+    font-weight: 800;
     line-height: 1.25;
+    letter-spacing: -0.025em;
     margin-bottom: 8px;
 }
 
-.minimal-subtitle {
-    font-size: clamp(0.85rem, 3.2vw, 0.92rem);
-    color: var(--text-secondary);
-    line-height: 1.5;
-    margin-bottom: 22px;
+.card-hero p {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.45;
 }
 
-/* Nota de Coexistencia */
-.minimal-note {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 0.82rem;
-    color: #475569;
-    text-align: left;
-    margin-bottom: 20px;
+.card-content {
+    padding: 32px 28px;
+}
+
+.feature-list {
+    list-style: none;
+    margin-bottom: 28px;
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.875rem;
+    color: var(--text-sub);
     line-height: 1.4;
 }
 
-.minimal-note i {
-    color: var(--brand-wa);
-    font-size: 0.95rem;
+.feature-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--brand-wa-light);
+    color: var(--brand-wa-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
     flex-shrink: 0;
+    margin-top: 1px;
 }
 
-/* Botón Meta Accesible y Táctil */
 .btn-meta {
     width: 100%;
-    min-height: 48px; /* Altura táctil recomendada por Apple y Google */
-    background-color: var(--brand-meta);
+    background-color: #1877f2;
     color: #ffffff;
     border: none;
-    border-radius: var(--radius-btn);
-    padding: 12px 18px;
-    font-size: clamp(0.88rem, 3.5vw, 0.95rem);
-    font-weight: 600;
-    font-family: inherit;
+    border-radius: var(--radius-lg);
+    padding: 14px 20px;
+    font-size: 1rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     cursor: pointer;
-    transition: background-color 0.15s ease, transform 0.1s ease;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(24, 119, 242, 0.3);
     text-decoration: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .btn-meta:hover {
-    background-color: var(--brand-meta-hover);
-    color: #ffffff;
-    text-decoration: none;
+    background-color: #166fe5;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(24, 119, 242, 0.35);
 }
 
 .btn-meta:active {
-    transform: scale(0.98);
+    transform: translateY(0);
 }
 
-.btn-meta:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* Enlace Secundario con Área de Toque Cómoda */
-.secondary-link {
+.fullscreen-link-box {
+    text-align: center;
     margin-top: 14px;
-    display: inline-block;
-    padding: 8px 10px;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    text-decoration: none;
-    line-height: 1.4;
-    transition: color 0.15s;
-    border-radius: 6px;
 }
 
-.secondary-link:hover {
-    color: var(--text-primary);
+.fullscreen-link {
+    font-size: 0.8rem;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.fullscreen-link:hover {
+    color: #1e293b;
     text-decoration: underline;
 }
 
-/* Alertas de Estado */
 .status-alert {
     display: none;
-    padding: 12px 14px;
-    border-radius: 8px;
-    font-size: 0.82rem;
-    margin-top: 16px;
-    text-align: left;
-    line-height: 1.45;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    margin-top: 20px;
+    text-align: center;
+    line-height: 1.4;
 }
 
 .status-alert.info {
     display: block;
-    background: #eff6ff;
-    color: #1e40af;
-    border: 1px solid #dbeafe;
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
 }
 
 .status-alert.error {
     display: block;
     background: #fef2f2;
     color: #991b1b;
-    border: 1px solid #fee2e2;
+    border: 1px solid #fecaca;
 }
 
 .status-alert.loading {
     display: block;
-    background: #f8fafc;
-    color: #334155;
-    border: 1px solid #e2e8f0;
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
 }
 
-/* Footer Discreto */
-.minimal-footer {
-    margin-top: 18px;
-    font-size: 0.72rem;
-    color: var(--text-muted);
+.success-box {
     text-align: center;
-    line-height: 1.4;
-    padding: 0 10px;
+    padding: 20px 10px;
 }
 
-/* ========================================================
-   MEDIA QUERIES DE ADAPTACIÓN PARA TODOS LOS DISPOSITIVOS
-   ======================================================== */
-
-/* Dispositivos Móviles Medianos (<= 480px) */
-@media (max-width: 480px) {
-    body {
-        padding: 12px;
-    }
-
-    .minimal-container {
-        padding: 26px 18px;
-        border-radius: 14px;
-    }
-
-    .minimal-subtitle {
-        margin-bottom: 18px;
-    }
-
-    .btn-meta {
-        padding: 12px 14px;
-    }
+.success-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--brand-wa-light);
+    color: var(--brand-wa);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 16px;
 }
 
-/* Dispositivos Móviles Pequeños (<= 360px como iPhone SE / Galaxy Mini) */
-@media (max-width: 360px) {
-    body {
-        padding: 8px;
-    }
-
-    .minimal-container {
-        padding: 20px 14px;
-        border-radius: 12px;
-    }
-
-    .minimal-icon {
-        width: 44px;
-        height: 44px;
-        font-size: 1.25rem;
-        margin-bottom: 14px;
-    }
-
-    .minimal-title {
-        font-size: 1.15rem;
-    }
-
-    .minimal-subtitle {
-        font-size: 0.82rem;
-        margin-bottom: 16px;
-    }
-
-    .btn-meta {
-        font-size: 0.85rem;
-        padding: 11px 10px;
-    }
-}
-
-/* Modo Horizontal en Teléfonos (Landscape con altura reducida <= 500px) */
-@media (max-height: 500px) and (orientation: landscape) {
-    body {
-        justify-content: flex-start;
-        padding: 20px 12px;
-    }
-
-    .minimal-container {
-        padding: 20px 24px;
-        margin: 10px auto;
-    }
-
-    .minimal-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 1.2rem;
-        margin-bottom: 10px;
-    }
-
-    .minimal-subtitle {
-        margin-bottom: 14px;
-    }
+.card-footer {
+    border-top: 1px solid var(--border);
+    padding: 18px 24px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: #fcfdfe;
 }

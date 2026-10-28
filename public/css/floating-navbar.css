@@ -1,9 +1,4 @@
-/* ==========================================================================
-   FLOATING DUAL DOCK (RAYCAST / DYNAMIC ISLAND LUXURY SYSTEM)
-   Bar 1: Primary View Switcher (Image 2 - Dashboard, Embudo, Chats...)
-   Bar 2: Contextual Action Toolbar (Tools exclusive to active view)
-   ========================================================================== */
-
+/* Barra de navegación flotante superior y herramientas contextuales */
 .floating-navbar-container {
     position: fixed;
     top: 14px;
@@ -41,9 +36,7 @@
     transform: translateY(-1px);
 }
 
-/* ==========================================================================
-   BARRA 1: NAVEGADOR PRINCIPAL DE VISTAS (IMAGE 2)
-   ========================================================================== */
+/* Pestañas de vistas principales */
 .floating-views-capsule {
     display: flex;
     align-items: center;
@@ -124,9 +117,7 @@
     flex-shrink: 0;
 }
 
-/* ==========================================================================
-   BARRA 2: HERRAMIENTAS CONTEXTUALES DE LA VISTA ACTIVA
-   ========================================================================== */
+/* Botones de acción rápida según la vista */
 .floating-tools-capsule {
     display: flex;
     align-items: center;

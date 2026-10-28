@@ -1,6 +1,4 @@
-/* ==========================================================================
-   EXECUTIVE HEADER BAR & TOP-TIER SAAS ATMOSPHERE
-   ========================================================================== */
+/* Barra de encabezado superior */
 .crm-executive-header {
     background: #ffffff;
     border: 1px solid rgba(226, 232, 240, 0.85);
@@ -131,9 +129,7 @@
     color: #ffffff;
 }
 
-/* ==========================================================================
-   DASHBOARD TILES & HIGH-END KPIS (STRIPE / LINEAR STYLE)
-   ========================================================================== */
+/* Métricas y KPIs del dashboard */
 .crm-dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -225,9 +221,7 @@
 .pill-teal { background: #f0f9ff; color: #0369a1; }
 .pill-purple { background: #faf5ff; color: #6b21a8; }
 
-/* ==========================================================================
-   FUNNEL STEPPER & INFRASTRUCTURE WIDGETS
-   ========================================================================== */
+/* Pasos del embudo de conversión */
 .crm-funnel-card {
     background: #fafbfc;
     border: 1px solid #f1f5f9;
@@ -1005,9 +999,7 @@
     justify-content: center;
 }
 
-/* ==========================================================================
-   TIMELINE DE AUDITORÍA Y FASE 2 & 3 ESTILOS
-   ========================================================================== */
+/* Timeline de actividad y cambios */
 .crm-timeline-feed {
     position: relative;
     border-left: 2px solid #e2e8f0;

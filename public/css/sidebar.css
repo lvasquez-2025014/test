@@ -1,7 +1,4 @@
-/* ==========================================================================
-   SIDEBAR PREMIUM - SUITE CRM CONVERSACIONAL (ESTILO LINEAR / ATTIO)
-   ========================================================================== */
-
+/* Barra lateral de navegación principal */
 .app-sidebar {
     width: var(--sidebar-width, 260px);
     background: #ffffff !important;

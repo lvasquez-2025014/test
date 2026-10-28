@@ -7,7 +7,6 @@
             </div>
             <div class="brand-details">
                 <span class="brand-title">PrimeCRM</span>
-                <span class="brand-status-pill"><span class="pulse-indicator"></span> Cloud API v22.0</span>
             </div>
         </div>
     </div>

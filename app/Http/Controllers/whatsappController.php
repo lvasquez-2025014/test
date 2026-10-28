@@ -364,7 +364,7 @@ class whatsappController extends Controller
                 $context->registrarActividad('creado', 'Contacto registrado por primera vez a través de WhatsApp.', 'WhatsApp Webhook');
             }
 
-            // Verificación de Horario de Atención Comercial (Fase 2)
+            // Si está fuera del horario laboral, mandamos el mensaje automático (máximo una vez cada 12h por cliente)
             if (!$instancia->estaEnHorarioAtencion()) {
                 $oooCacheKey = 'wa_ooo_' . $instancia->id . '_' . $remitente;
                 if (!Cache::has($oooCacheKey)) {

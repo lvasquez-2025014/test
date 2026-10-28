@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const funnelContainer = document.getElementById('crm-dashboard-funnel');
         const funnelTotalBadge = document.getElementById('dash-funnel-total-badge');
         if (funnelTotalBadge) {
-            funnelTotalBadge.textContent = `${formatCurrency(totalPipelineVal)} en juego`;
+            funnelTotalBadge.textContent = formatCurrency(totalPipelineVal);
         }
         if (funnelContainer) {
             funnelContainer.innerHTML = '';
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             </span>
                             <div>
                                 <span class="font-weight-700 text-dark" style="font-size:0.88rem;">${escapeHtml(meta.label)}</span>
-                                <span class="badge badge-light border ml-1 font-mono text-muted" style="font-size:0.75rem;">${stageLeads.length} ${stageLeads.length === 1 ? 'lead' : 'leads'} (${pct}%)</span>
+                                <span class="badge badge-light border ml-2 font-mono" style="font-size:0.75rem;">${stageLeads.length} (${pct}%)</span>
                             </div>
                         </div>
                         <span class="font-mono font-weight-700 text-dark" style="font-size:0.95rem;">${formatCurrency(sum)}</span>
@@ -1975,9 +1975,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // =========================================================================
-    // MODULO: IMPORTADOR MASIVO CSV CON MAPEO
-    // =========================================================================
+    // Importador de contactos desde archivo CSV
     const csvFileInput = document.getElementById('csvFileInput');
     const csvDropZone = document.getElementById('csvDropZone');
     const csvMappingContainer = document.getElementById('csvMappingContainer');
@@ -2155,9 +2153,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (infoEl) infoEl.textContent = '';
     });
 
-    // =========================================================================
-    // MODULO: BASE DE CONOCIMIENTO RAG PARA AGENTE IA
-    // =========================================================================
+    // Gestión de la base de conocimiento para la IA
     function renderKnowledgeBase() {
         const tbody = document.getElementById('crm-knowledge-tbody');
         if (!tbody) return;
@@ -2290,9 +2286,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // =========================================================================
-    // MODULO: ENLACES wa.me Y WIDGET WEB EMBEBIBLE
-    // =========================================================================
+    // Generador de enlaces directos y widget de chat
     function updateWidgetPreview() {
         const phone = (document.getElementById('linkPhone')?.value.trim() || '').replace(/[^0-9]/g, '');
         const msg = document.getElementById('linkMessage')?.value.trim() || '';
@@ -2335,9 +2329,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // =========================================================================
-    // MODULO: AJUSTES DE EMPRESA, HORARIOS, FISCAL Y WEBHOOKS
-    // =========================================================================
+    // Pestañas de configuración general de la empresa
     document.querySelectorAll('#settingsModalNav [data-cfg-tab]').forEach(btn => {
         btn.addEventListener('click', function () {
             document.querySelectorAll('#settingsModalNav [data-cfg-tab]').forEach(b => b.classList.remove('active'));

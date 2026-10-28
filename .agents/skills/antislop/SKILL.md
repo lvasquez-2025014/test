@@ -69,3 +69,4 @@ Before delivering code or UI, run this gate:
 - [ ] **Functional Completeness:** Does every button, filter, and tab connect to a real handler, modal, or action?
 - [ ] **Accessibility & Contrast:** Do all text labels meet WCAG AA contrast ($\ge 4.5:1$)?
 - [ ] **Real Utility:** Does the screen solve the operator's job without filler or empty voids?
+

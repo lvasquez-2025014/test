@@ -16,28 +16,14 @@
                     {{ strtoupper(substr($instancia->nombre_empresa ?? 'E', 0, 1)) }}
                 </div>
                 <div>
-                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <h1 class="crm-executive-title">
-                            {{ $instancia->nombre_empresa }}
-                        </h1>
-                        <span class="meta-verified-badge" title="Canal Oficial Meta WhatsApp Cloud API v22.0">
-                            <i class="fab fa-whatsapp"></i> Cloud API v22.0 Oficial
-                        </span>
-                    </div>
-                    <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
-                        @if($instancia->telefono)
-                            <span class="status-chip chip-green">
-                                <span class="status-pulse-dot"></span>
-                                <i class="fab fa-whatsapp mr-1"></i>+{{ $instancia->telefono }}
-                            </span>
-                        @endif
-                        <span class="status-chip chip-slate font-mono">
-                            <i class="fas fa-fingerprint mr-1 text-muted"></i>ID: {{ $instancia->phone_number_id }}
-                        </span>
-                        <span class="status-chip chip-slate">
-                            <i class="fas fa-shield-alt text-success mr-1"></i>Calidad Alta
-                        </span>
-                    </div>
+                    <h1 class="crm-executive-title">
+                        {{ $instancia->nombre_empresa }}
+                    </h1>
+                    @if($instancia->telefono)
+                        <div class="text-muted small mt-1 font-mono">
+                            <i class="fab fa-whatsapp text-success mr-1"></i>+{{ $instancia->telefono }}
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -54,6 +40,12 @@
                     </button>
                 @endif
                 <button type="button" class="btn-executive btn-executive-primary" data-toggle="modal" data-target="#modalCrmNuevoLead">
+                    <i class="fas fa-user-plus mr-1"></i> + Nuevo Lead
+                </button>
+            </div>
+        </div>
+    </div>
+@stop
                     <i class="fas fa-user-plus mr-1"></i> + Nuevo Lead
                 </button>
             </div>
@@ -256,7 +248,7 @@
     <div id="pane-dashboard" class="tab-pane-content">
         <!-- Indicadores principales -->
         <div class="crm-dashboard-grid" id="dash-section-kpis">
-            <div class="crm-stat-card card-kpi-leads">
+            <div class="crm-stat-card">
                 <div class="crm-stat-header">
                     <span class="crm-stat-label">Leads Activos</span>
                     <div class="crm-stat-icon-badge badge-blue">
@@ -264,14 +256,9 @@
                     </div>
                 </div>
                 <div class="crm-stat-value" id="dash-total-leads">0</div>
-                <div class="crm-stat-footer">
-                    <span class="stat-pill-trend pill-blue">
-                        <i class="fas fa-arrow-trend-up mr-1"></i> Contactos en embudo
-                    </span>
-                </div>
             </div>
 
-            <div class="crm-stat-card card-kpi-value">
+            <div class="crm-stat-card">
                 <div class="crm-stat-header">
                     <span class="crm-stat-label">Valor en Pipeline</span>
                     <div class="crm-stat-icon-badge badge-indigo">
@@ -279,14 +266,9 @@
                     </div>
                 </div>
                 <div class="crm-stat-value" id="dash-pipeline-value">$0</div>
-                <div class="crm-stat-footer">
-                    <span class="stat-pill-trend pill-indigo">
-                        <i class="fas fa-briefcase mr-1"></i> Oportunidades vivas
-                    </span>
-                </div>
             </div>
 
-            <div class="crm-stat-card card-kpi-won">
+            <div class="crm-stat-card">
                 <div class="crm-stat-header">
                     <span class="crm-stat-label">Ventas Ganadas</span>
                     <div class="crm-stat-icon-badge badge-emerald">
@@ -294,14 +276,10 @@
                     </div>
                 </div>
                 <div class="crm-stat-value text-success" id="dash-won-value">$0</div>
-                <div class="crm-stat-footer">
-                    <span class="stat-pill-trend pill-emerald">
-                        <i class="fas fa-circle-check mr-1"></i> Cierre: <strong id="dash-conversion-rate" class="ml-1">0%</strong>
-                    </span>
-                </div>
+                <div class="text-muted small font-mono mt-1">Cierre: <strong id="dash-conversion-rate">0%</strong></div>
             </div>
 
-            <div class="crm-stat-card card-kpi-tasks">
+            <div class="crm-stat-card">
                 <div class="crm-stat-header">
                     <span class="crm-stat-label">Tareas Pendientes</span>
                     <div class="crm-stat-icon-badge badge-amber">
@@ -309,14 +287,9 @@
                     </div>
                 </div>
                 <div class="crm-stat-value" id="dash-pending-tasks">0</div>
-                <div class="crm-stat-footer">
-                    <span class="stat-pill-trend pill-amber">
-                        <i class="fas fa-calendar-check mr-1"></i> Seguimientos activos
-                    </span>
-                </div>
             </div>
 
-            <div class="crm-stat-card card-kpi-traffic">
+            <div class="crm-stat-card">
                 <div class="crm-stat-header">
                     <span class="crm-stat-label">Tráfico WhatsApp</span>
                     <div class="crm-stat-icon-badge badge-teal">
@@ -324,126 +297,74 @@
                     </div>
                 </div>
                 <div class="crm-stat-value">{{ $totalInbound + $totalOutbound }}</div>
-                <div class="crm-stat-footer">
-                    <span class="stat-pill-trend pill-teal">
-                        <i class="fas fa-arrows-left-right mr-1"></i> {{ $totalInbound }} in / {{ $totalOutbound }} out
-                    </span>
-                </div>
+                <div class="text-muted small mt-1 font-mono">{{ $totalInbound }} in · {{ $totalOutbound }} out</div>
             </div>
 
-            <div class="crm-stat-card card-kpi-bot">
+            <div class="crm-stat-card">
                 <div class="crm-stat-header">
-                    <span class="crm-stat-label">Coexistencia IA</span>
+                    <span class="crm-stat-label">Distribución</span>
                     <div class="crm-stat-icon-badge badge-purple">
                         <i class="fas fa-robot"></i>
                     </div>
                 </div>
                 <div class="crm-stat-value" style="font-size: 1.4rem;" id="dash-bot-ratio">0 Bot / 0 Humano</div>
-                <div class="crm-stat-footer">
-                    <span class="stat-pill-trend pill-purple">
-                        <i class="fas fa-bolt mr-1"></i> Tiempo real
-                    </span>
-                </div>
             </div>
         </div>
 
-        <!-- Fila de Showcase de Doble Columna: Embudo de Conversión + Salud de Infraestructura Técnica -->
+        <!-- Fila Principal: Embudo de Ventas + Actividad Reciente -->
         <div class="row">
-            <!-- Columna Izquierda: Embudo de Conversión (Kanban Funnel) -->
+            <!-- Columna Izquierda: Embudo de Ventas -->
             <div class="col-lg-7 mb-4" id="dash-section-funnel">
                 <div class="saas-card h-100 shadow-sm border">
                     <div class="saas-card-header d-flex justify-content-between align-items-center">
-                        <div>
-                            <h3 class="saas-card-title mb-0">
-                                <i class="fas fa-filter text-primary mr-2"></i>Embudo de Conversión Comercial
-                            </h3>
-                            <div class="text-muted small mt-1">Monitoreo paso a paso del flujo de ventas y cuellos de botella</div>
-                        </div>
-                        <span class="badge badge-light border font-mono px-3 py-2" id="dash-funnel-total-badge">$0 USD en juego</span>
+                        <h3 class="saas-card-title mb-0">
+                            <i class="fas fa-filter text-primary mr-2"></i>Embudo de Ventas
+                        </h3>
+                        <span class="badge badge-light border font-mono px-3 py-2 text-dark font-weight-700" id="dash-funnel-total-badge">$0</span>
                     </div>
                     <div class="saas-card-body" id="crm-dashboard-funnel">
                         <div class="text-center py-5 text-muted">
-                            <i class="fas fa-circle-notch fa-spin mr-2"></i> Calculando analítica de conversión...
+                            <i class="fas fa-circle-notch fa-spin mr-2"></i> Cargando embudo...
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Columna Derecha: Salud Operativa de Infraestructura & IA -->
+            <!-- Columna Derecha: Actividad Reciente en Vivo (Mensajes Reales) -->
             <div class="col-lg-5 mb-4" id="dash-section-activity">
-                <!-- Tarjeta 1: Canal Meta WhatsApp Cloud API v22.0 -->
-                <div class="infra-widget-card mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="crm-stat-icon-badge badge-emerald">
-                                <i class="fab fa-whatsapp"></i>
-                            </span>
-                            <div>
-                                <div class="font-weight-700 text-dark" style="font-size: 0.95rem;">Canal WhatsApp Cloud API</div>
-                                <div class="small text-muted font-mono">Meta Official API v22.0</div>
+                <div class="saas-card h-100 shadow-sm border">
+                    <div class="saas-card-header d-flex justify-content-between align-items-center">
+                        <h3 class="saas-card-title mb-0">
+                            <i class="fas fa-comments text-primary mr-2"></i>Actividad Reciente
+                        </h3>
+                        <span class="badge badge-light border small text-muted font-mono">En vivo</span>
+                    </div>
+                    <div class="saas-card-body p-0" style="max-height: 440px; overflow-y: auto;">
+                        @forelse($mensajesRecientes as $msg)
+                            <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-start gap-2">
+                                <div class="min-w-0" style="flex: 1;">
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <span class="badge {{ $msg->direction === 'inbound' ? 'badge-success' : 'badge-primary' }} small" style="font-size: 0.68rem;">
+                                            {{ $msg->direction === 'inbound' ? 'Entrante' : 'Saliente' }}
+                                        </span>
+                                        <span class="font-mono small font-weight-600 text-dark">
+                                            +{{ $msg->direction === 'inbound' ? $msg->from : $msg->to }}
+                                        </span>
+                                    </div>
+                                    <div class="text-secondary small text-truncate" style="max-width: 260px;">
+                                        {{ $msg->body }}
+                                    </div>
+                                </div>
+                                <span class="text-muted flex-shrink-0" style="font-size: 0.72rem;">
+                                    {{ $msg->created_at?->diffForHumans(null, true) }}
+                                </span>
                             </div>
-                        </div>
-                        <span class="status-chip chip-green">
-                            <span class="status-pulse-dot"></span> Online
-                        </span>
-                    </div>
-
-                    <div class="infra-status-row">
-                        <span class="text-secondary small"><i class="fas fa-shield-alt text-success mr-2"></i>Firma Webhook</span>
-                        <span class="font-mono small font-weight-600 text-dark">HMAC-SHA256 Verificado</span>
-                    </div>
-
-                    <div class="infra-status-row">
-                        <span class="text-secondary small"><i class="fas fa-hourglass-half text-warning mr-2"></i>Ventana 24 Horas</span>
-                        <span class="badge badge-light border small font-weight-600 text-success">Automática por Mensaje</span>
-                    </div>
-
-                    <div class="infra-status-row">
-                        <span class="text-secondary small"><i class="fas fa-mobile-alt text-primary mr-2"></i>Message Echoes</span>
-                        <span class="badge badge-light border small font-weight-600 text-primary">Sincronizado con App Móvil</span>
-                    </div>
-
-                    <div class="infra-status-row">
-                        <span class="text-secondary small"><i class="fas fa-signal text-info mr-2"></i>Nivel de Calidad</span>
-                        <span class="badge badge-success small font-weight-700">Alta Calidad (Green Tier)</span>
-                    </div>
-                </div>
-
-                <!-- Tarjeta 2: Motor de Inteligencia Artificial Groq Copiloto -->
-                <div class="infra-widget-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="crm-stat-icon-badge badge-purple">
-                                <i class="fas fa-robot"></i>
-                            </span>
-                            <div>
-                                <div class="font-weight-700 text-dark" style="font-size: 0.95rem;">Motor IA & Copiloto</div>
-                                <div class="small text-muted">Groq Cloud • LLaMA 3.3 70B</div>
+                        @empty
+                            <div class="text-center text-muted small py-5">
+                                <i class="fas fa-inbox fa-2x mb-2 text-muted" style="opacity: 0.35;"></i>
+                                <div>Sin mensajes registrados recientemente.</div>
                             </div>
-                        </div>
-                        <span class="badge badge-purple px-2 py-1 small">
-                            <i class="fas fa-microchip mr-1"></i> Groq LPU
-                        </span>
-                    </div>
-
-                    <div class="infra-status-row">
-                        <span class="text-secondary small"><i class="fas fa-brain text-purple mr-2"></i>Catálogo RAG</span>
-                        <span class="small font-weight-600 text-dark">Inyección Dinámica de Precios</span>
-                    </div>
-
-                    <div class="infra-status-row">
-                        <span class="text-secondary small"><i class="fas fa-shield-halved text-success mr-2"></i>Seguridad Guardrails</span>
-                        <span class="badge badge-light border small text-success">Anti-Jailbreak & DLP Activos</span>
-                    </div>
-
-                    <div class="infra-status-row">
-                        <span class="text-secondary small"><i class="fas fa-tachometer-alt text-warning mr-2"></i>Latencia Media</span>
-                        <span class="font-mono small text-dark font-weight-600">&lt; 750 ms</span>
-                    </div>
-
-                    <div class="infra-status-row">
-                        <span class="text-secondary small"><i class="fas fa-microphone text-info mr-2"></i>Transcripción de Voz</span>
-                        <span class="badge badge-light border small text-info">Whisper Turbo Activo</span>
+                        @endforelse
                     </div>
                 </div>
             </div>
@@ -1677,7 +1598,7 @@
                         </div>
                     </div>
 
-                    <div class="modal-body p-4" style="max-height: 72vh; overflow-y: auto;">
+                    <div class="modal-body p-4" style="max-height: 72vh; o  verflow-y: auto;">
                         <!-- Ajustes de WhatsApp -->
                         <div id="cfg-pane-general">
                             <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">

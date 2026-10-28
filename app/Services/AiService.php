@@ -17,7 +17,7 @@ class AiService
     ): string {
         $nombreEmpresa = $empresa ?: ($instancia->nombre_empresa ?? 'nuestra empresa');
 
-        // Control de Cuotas y Límites de Consumo de IA (Fase 3 SaaS Scale)
+        // Revisamos si la empresa ya superó su cuota mensual de respuestas con IA
         if ($instancia instanceof \App\Models\Instancia) {
             if (!$instancia->puedeConsumirIa()) {
                 return "Hola, gracias por comunicarte con {$nombreEmpresa}. Nuestro asistente virtual ha alcanzado su límite de atención mensual. Un asesor de nuestro equipo se comunicará contigo en breve para darte soporte personalizado.";
@@ -27,7 +27,7 @@ class AiService
 
         $basePrompt = $customPrompt ?: "Eres el asistente virtual comercial y de atención de {$nombreEmpresa}. Atiende a los clientes de forma profesional, clara y cordial, respondiendo sus dudas sobre productos, servicios o precios. Si solicitan hablar con un humano o asesor, indícales amablemente que los estás transfiriendo.";
 
-        // RAG / Base de Conocimiento Documental de la Empresa (Fase 3)
+        // Inyectamos artículos de la base de conocimiento para que la IA responda con datos reales de la empresa
         $ragContext = '';
         if ($instancia instanceof \App\Models\Instancia) {
             $docs = is_array($instancia->base_conocimiento) ? $instancia->base_conocimiento : [];
