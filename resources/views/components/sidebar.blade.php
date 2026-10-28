@@ -2,12 +2,7 @@
 <aside class="app-sidebar">
     <div class="sidebar-brand-wrapper">
         <div class="sidebar-brand">
-            <div class="brand-emblem">
-                <i class="fas fa-layer-group"></i>
-            </div>
-            <div class="brand-details">
-                <span class="brand-title">PrimeCRM</span>
-            </div>
+            <span class="brand-title">PrimeCRM</span>
         </div>
     </div>
 

@@ -11,20 +11,15 @@
 @section('content_header')
     <div class="crm-executive-header">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-            <div class="d-flex align-items-center gap-3">
-                <div class="crm-company-avatar">
-                    {{ strtoupper(substr($instancia->nombre_empresa ?? 'E', 0, 1)) }}
-                </div>
-                <div>
-                    <h1 class="crm-executive-title">
-                        {{ $instancia->nombre_empresa }}
-                    </h1>
-                    @if($instancia->telefono)
-                        <div class="text-muted small mt-1 font-mono">
-                            <i class="fab fa-whatsapp text-success mr-1"></i>+{{ $instancia->telefono }}
-                        </div>
-                    @endif
-                </div>
+            <div>
+                <h1 class="crm-executive-title">
+                    {{ $instancia->nombre_empresa }}
+                </h1>
+                @if($instancia->telefono)
+                    <div class="text-muted small mt-1 font-mono">
+                        <i class="fab fa-whatsapp text-success mr-1"></i>+{{ $instancia->telefono }}
+                    </div>
+                @endif
             </div>
 
             <div class="d-flex align-items-center gap-2 flex-wrap">
