@@ -105,16 +105,38 @@ class InstanciaController extends Controller
             });
         }
 
+        // Contactos y mapa de últimos mensajes para triage multichat
+        $contactsCollection = $leadsQuery->get();
+        $phoneNumbers = $contactsCollection->pluck('phone_number')->filter()->unique()->values();
+
+        $ultimosMensajesMap = collect();
+        if ($phoneNumbers->isNotEmpty()) {
+            $ultimosMensajesMap = Mensaje::where('instancia_id', $instancia->id)
+                ->where(function ($q) use ($phoneNumbers) {
+                    $q->whereIn('from', $phoneNumbers)
+                      ->orWhereIn('to', $phoneNumbers);
+                })
+                ->orderBy('id', 'desc')
+                ->get()
+                ->groupBy(function ($m) {
+                    return $m->direction === 'inbound' ? $m->from : $m->to;
+                })
+                ->map(function ($group) {
+                    return $group->first();
+                });
+        }
+
         // Contactos formateados para el kanban, inbox y directorio
-        $todosContactos = $leadsQuery
-            ->get()
-            ->map(function (UserContext $c) use ($etapas) {
+        $todosContactos = $contactsCollection
+            ->map(function (UserContext $c) use ($etapas, $ultimosMensajesMap) {
                 $botPausado = !$c->is_bot_active || ($c->bot_paused_until && now()->lt($c->bot_paused_until));
                 $lastInbound = $c->ultimo_mensaje_cliente_at;
                 $ventanaActiva = $lastInbound ? now()->diffInHours($lastInbound, false) > -24 && $lastInbound->gt(now()->subHours(24)) : false;
                 $horasRestantes = ($ventanaActiva && $lastInbound)
                     ? max(0, round(now()->diffInMinutes($lastInbound->copy()->addHours(24), false) / 60, 1))
                     : 0;
+
+                $lastMsg = $ultimosMensajesMap->get($c->phone_number);
 
                 return [
                     'id'                         => $c->id,
@@ -144,9 +166,30 @@ class InstanciaController extends Controller
                     'ventana_24h_activa'         => $ventanaActiva,
                     'ventana_24h_horas'          => $horasRestantes,
                     'ultimo_mensaje_cliente_iso' => $lastInbound ? $lastInbound->toIso8601String() : null,
+                    'ultimo_mensaje_id'          => $lastMsg ? $lastMsg->id : 0,
+                    'ultimo_mensaje_body'        => $lastMsg ? $lastMsg->body : null,
+                    'ultimo_mensaje_direction'   => $lastMsg ? $lastMsg->direction : null,
+                    'ultimo_mensaje_type'        => $lastMsg ? $lastMsg->type : null,
+                    'ultimo_mensaje_status'      => $lastMsg ? $lastMsg->status : null,
+                    'ultimo_mensaje_human'       => $lastMsg && $lastMsg->created_at ? $lastMsg->created_at->diffForHumans(null, true) : null,
+                    'ultimo_mensaje_iso'         => $lastMsg && $lastMsg->created_at ? $lastMsg->created_at->toIso8601String() : null,
                     'updated_human'              => $c->updated_at ? $c->updated_at->diffForHumans() : 'Reciente',
                     'updated_iso'                => $c->updated_at ? $c->updated_at->toIso8601String() : null,
                 ];
+            })
+            ->values();
+
+        // Conversaciones activas ordenadas para triage prioritario del Dashboard
+        $conversacionesActivas = $todosContactos
+            ->filter(function ($c) {
+                return !empty($c['ultimo_mensaje_body']) || $c['mensajes_sin_leer'] > 0 || $c['estado_conversacion'] !== 'resuelta';
+            })
+            ->sortByDesc(function ($c) {
+                $priority = 0;
+                if ($c['mensajes_sin_leer'] > 0) $priority += 10000000;
+                if (!$c['is_bot_active']) $priority += 5000000;
+                $priority += (int) ($c['ultimo_mensaje_id'] ?? 0);
+                return $priority;
             })
             ->values();
 
@@ -213,6 +256,7 @@ class InstanciaController extends Controller
             'isAdmin',
             'contactos',
             'todosContactos',
+            'conversacionesActivas',
             'etapas',
             'usuariosEmpresa',
             'camposPersonalizadosDef',

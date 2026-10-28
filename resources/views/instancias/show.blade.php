@@ -320,48 +320,83 @@
                 </div>
             </div>
 
-            <!-- Columna Derecha: Actividad Reciente en Vivo (Linear Style) -->
+            <!-- Columna Derecha: Triage de Conversaciones Activas -->
             <div class="col-lg-5 mb-4" id="dash-section-activity">
                 <div class="dash-activity-card">
                     <div class="dash-card-header">
-                        <h3 class="dash-card-title">
-                            <span class="status-pulse-dot mr-1"></span> Actividad en Vivo
-                        </h3>
+                        <div class="d-flex align-items-center gap-2">
+                            <h3 class="dash-card-title m-0">
+                                <span class="status-pulse-dot mr-1"></span> Conversaciones en Curso
+                            </h3>
+                            <span class="crm-stage-count-pill" id="dash-active-chats-badge">
+                                {{ count($conversacionesActivas) }}
+                            </span>
+                        </div>
                         <a href="#chats" class="sidebar-tab-link text-muted small" data-nav="chats" style="font-weight: 600; text-decoration: none;">
                             Ver bandeja <i class="fas fa-arrow-right ml-1"></i>
                         </a>
                     </div>
-                    <div class="dash-activity-feed">
-                        @forelse($mensajesRecientes as $msg)
+
+                    <!-- Toolbar de triage rápido para filtrar la cola de conversaciones -->
+                    <div class="dash-triage-toolbar">
+                        <button type="button" class="dash-triage-tab active" data-triage-filter="all">
+                            Todas
+                        </button>
+                        <button type="button" class="dash-triage-tab" data-triage-filter="human">
+                            Esperando Asesor
+                        </button>
+                        <button type="button" class="dash-triage-tab" data-triage-filter="unread">
+                            Sin Leer
+                        </button>
+                    </div>
+
+                    <div class="dash-conversations-queue" id="crm-dashboard-active-chats">
+                        @forelse($conversacionesActivas as $conv)
                             @php
-                                $displayPhone = $msg->direction === 'inbound' ? $msg->from : $msg->to;
-                                $initials = substr(preg_replace('/[^0-9]/', '', $displayPhone), -2);
+                                $cInitials = strtoupper(substr(preg_replace('/[^a-zA-Z0-9]/', '', $conv['nombre'] ?: 'WA'), 0, 2));
+                                $stageKey = $conv['etapa'] ?? 'nuevo';
+                                $stageMeta = $etapas[$stageKey] ?? ['label' => 'Nuevo', 'color' => '#3b82f6'];
+                                $isHumanWait = !$conv['is_bot_active'];
+                                $hasUnread = (int)($conv['mensajes_sin_leer'] ?? 0) > 0;
                             @endphp
-                            <div class="dash-activity-item">
-                                <div class="activity-avatar">
-                                    {{ $initials ?: 'WA' }}
+                            <div class="crm-dash-chat-row" data-lead-id="{{ $conv['id'] }}" data-is-human="{{ $isHumanWait ? '1' : '0' }}" data-has-unread="{{ $hasUnread ? '1' : '0' }}">
+                                <div class="dash-chat-avatar-wrapper">
+                                    <div class="dash-chat-avatar">
+                                        {{ $cInitials }}
+                                    </div>
+                                    <span class="dash-chat-status-dot {{ $isHumanWait ? 'dot-human' : 'dot-bot' }}" title="{{ $isHumanWait ? 'Atención Humana requerida' : 'Atendido por Bot' }}"></span>
                                 </div>
-                                <div class="activity-content">
-                                    <div class="activity-header">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="activity-phone">+{{ $displayPhone }}</span>
-                                            <span class="activity-direction-badge {{ $msg->direction === 'inbound' ? 'dir-inbound' : 'dir-outbound' }}">
-                                                {{ $msg->direction === 'inbound' ? 'Entrante' : 'Saliente' }}
+                                <div class="dash-chat-body">
+                                    <div class="dash-chat-header-row">
+                                        <div class="d-flex align-items-center gap-1 text-truncate">
+                                            <span class="dash-chat-name" title="{{ $conv['nombre'] }}">{{ $conv['nombre'] }}</span>
+                                            <span class="dash-chat-phone">+{{ $conv['phone_number'] }}</span>
+                                        </div>
+                                        <span class="dash-chat-time">{{ $conv['ultimo_mensaje_human'] ?: $conv['updated_human'] }}</span>
+                                    </div>
+                                    <div class="dash-chat-preview-row">
+                                        <div class="dash-chat-snippet text-truncate">
+                                            @if($conv['ultimo_mensaje_direction'] === 'outbound')
+                                                <i class="fas fa-reply text-muted mr-1" style="font-size:0.7rem;"></i>{{ $conv['ultimo_mensaje_body'] ?: 'Mensaje enviado' }}
+                                            @else
+                                                {{ $conv['ultimo_mensaje_body'] ?: 'Conversación abierta' }}
+                                            @endif
+                                        </div>
+                                        <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                                            @if($hasUnread)
+                                                <span class="crm-unread-badge">{{ $conv['mensajes_sin_leer'] }}</span>
+                                            @endif
+                                            <span class="crm-badge" style="background: {{ $stageMeta['color'] ?? '#3b82f6' }}15; color: {{ $stageMeta['color'] ?? '#3b82f6' }}; font-size: 0.68rem; padding: 2px 6px;">
+                                                {{ $stageMeta['label'] ?? $stageKey }}
                                             </span>
                                         </div>
-                                        <span class="activity-time">
-                                            {{ $msg->created_at?->diffForHumans(null, true) }}
-                                        </span>
-                                    </div>
-                                    <div class="activity-snippet" title="{{ $msg->body }}">
-                                        {{ $msg->body }}
                                     </div>
                                 </div>
                             </div>
                         @empty
                             <div class="text-center text-muted small py-5">
                                 <i class="fab fa-whatsapp fa-2x mb-2 text-muted" style="opacity: 0.35;"></i>
-                                <div>Sin mensajes registrados recientemente.</div>
+                                <div>Sin conversaciones activas en este momento.</div>
                             </div>
                         @endforelse
                     </div>

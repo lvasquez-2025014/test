@@ -132,7 +132,117 @@ document.addEventListener('DOMContentLoaded', function () {
                 funnelContainer.appendChild(card);
             });
         }
+
+        renderDashboardActiveChats();
     }
+
+    // Triage de conversaciones activas en el Dashboard
+    let dashTriageFilter = 'all';
+    function renderDashboardActiveChats() {
+        const queueContainer = document.getElementById('crm-dashboard-active-chats');
+        const badgeEl = document.getElementById('dash-active-chats-badge');
+        if (!queueContainer) return;
+
+        const activeChats = leads.filter(l => {
+            const hasActivity = Boolean(l.ultimo_mensaje_body) || (Number(l.mensajes_sin_leer) || 0) > 0 || l.estado_conversacion !== 'resuelta';
+            if (!hasActivity) return false;
+
+            if (dashTriageFilter === 'human') {
+                return !l.is_bot_active || l.etapa === 'asesor';
+            }
+            if (dashTriageFilter === 'unread') {
+                return (Number(l.mensajes_sin_leer) || 0) > 0;
+            }
+            return true;
+        }).sort((a, b) => {
+            let pA = 0;
+            let pB = 0;
+            if ((Number(a.mensajes_sin_leer) || 0) > 0) pA += 10000000;
+            if (!a.is_bot_active) pA += 5000000;
+            pA += (Number(a.ultimo_mensaje_id) || 0);
+
+            if ((Number(b.mensajes_sin_leer) || 0) > 0) pB += 10000000;
+            if (!b.is_bot_active) pB += 5000000;
+            pB += (Number(b.ultimo_mensaje_id) || 0);
+
+            return pB - pA;
+        });
+
+        if (badgeEl) {
+            badgeEl.textContent = `${activeChats.length}`;
+        }
+
+        if (activeChats.length === 0) {
+            queueContainer.innerHTML = `
+                <div class="text-center text-muted small py-5">
+                    <i class="fab fa-whatsapp fa-2x mb-2 text-muted" style="opacity: 0.35;"></i>
+                    <div>No hay conversaciones que coincidan con este filtro.</div>
+                </div>
+            `;
+            return;
+        }
+
+        queueContainer.innerHTML = '';
+        activeChats.forEach(c => {
+            const row = document.createElement('div');
+            row.className = 'crm-dash-chat-row';
+            row.dataset.leadId = String(c.id);
+
+            const initial = (c.nombre || 'C').trim().charAt(0).toUpperCase();
+            const stageMeta = stages[c.etapa] || stages.nuevo || { label: 'Nuevo', color: '#3b82f6' };
+            const isHumanWait = !c.is_bot_active;
+            const hasUnread = (Number(c.mensajes_sin_leer) || 0) > 0;
+
+            const snippet = c.ultimo_mensaje_body || 'Conversación abierta';
+            const snippetHtml = c.ultimo_mensaje_direction === 'outbound'
+                ? `<i class="fas fa-reply text-muted mr-1" style="font-size:0.7rem;"></i>${escapeHtml(snippet)}`
+                : escapeHtml(snippet);
+
+            row.innerHTML = `
+                <div class="dash-chat-avatar-wrapper">
+                    <div class="dash-chat-avatar">
+                        ${escapeHtml(initial)}
+                    </div>
+                    <span class="dash-chat-status-dot ${isHumanWait ? 'dot-human' : 'dot-bot'}" title="${isHumanWait ? 'Atención Humana requerida' : 'Atendido por Bot'}"></span>
+                </div>
+                <div class="dash-chat-body">
+                    <div class="dash-chat-header-row">
+                        <div class="d-flex align-items-center gap-1 text-truncate">
+                            <span class="dash-chat-name" title="${escapeHtml(c.nombre)}">${escapeHtml(c.nombre)}</span>
+                            <span class="dash-chat-phone">+${escapeHtml(c.phone_number)}</span>
+                        </div>
+                        <span class="dash-chat-time">${escapeHtml(c.ultimo_mensaje_human || c.updated_human || 'Reciente')}</span>
+                    </div>
+                    <div class="dash-chat-preview-row">
+                        <div class="dash-chat-snippet text-truncate">
+                            ${snippetHtml}
+                        </div>
+                        <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                            ${hasUnread ? `<span class="crm-unread-badge">${Number(c.mensajes_sin_leer)}</span>` : ''}
+                            <span class="crm-badge" style="background: ${escapeHtml(stageMeta.color)}15; color: ${escapeHtml(stageMeta.color)}; font-size: 0.68rem; padding: 2px 6px;">
+                                ${escapeHtml(stageMeta.label)}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            row.addEventListener('click', function () {
+                openLeadInInbox(c.id);
+            });
+
+            queueContainer.appendChild(row);
+        });
+    }
+
+    document.querySelectorAll('.dash-triage-tab').forEach(btn => {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.dash-triage-tab').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            dashTriageFilter = this.dataset.triageFilter || 'all';
+            renderDashboardActiveChats();
+        });
+    });
 
     // Pipeline kanban y filtros de leads
     const kanbanBoard = document.getElementById('crm-kanban-board');
@@ -634,36 +744,33 @@ document.addEventListener('DOMContentLoaded', function () {
             item.dataset.leadId = String(lead.id);
 
             const initial = (lead.nombre || 'C').trim().charAt(0).toUpperCase();
-            const statusIcon = lead.is_bot_active
-                ? '<i class="fas fa-robot text-primary" title="Bot Activo"></i>'
-                : '<i class="fas fa-user-check text-danger" title="Atención Humana"></i>';
-
+            const isHumanWait = !lead.is_bot_active;
             const unreadCount = Number(lead.mensajes_sin_leer) || 0;
             const unreadHtml = unreadCount > 0 ? `<span class="crm-unread-badge">${unreadCount}</span>` : '';
 
-            const convStateDot = lead.estado_conversacion === 'resuelta'
-                ? '⚪'
-                : (lead.estado_conversacion === 'pendiente' ? '🟡' : '🟢');
+            const snippet = lead.ultimo_mensaje_body || (lead.phone_number ? `+${lead.phone_number}` : 'Conversación abierta');
+            const snippetHtml = lead.ultimo_mensaje_direction === 'outbound'
+                ? `<i class="fas fa-reply text-muted mr-1" style="font-size:0.7rem;"></i>${escapeHtml(snippet)}`
+                : escapeHtml(snippet);
 
             item.innerHTML = `
-                <div class="crm-chat-avatar">${escapeHtml(initial)}</div>
+                <div class="dash-chat-avatar-wrapper">
+                    <div class="crm-chat-avatar">${escapeHtml(initial)}</div>
+                    <span class="dash-chat-status-dot ${isHumanWait ? 'dot-human' : 'dot-bot'}" title="${isHumanWait ? 'Atención Humana' : 'Bot Activo'}"></span>
+                </div>
                 <div class="crm-chat-meta">
                     <div class="crm-chat-name-row">
-                        <span class="crm-chat-name">${convStateDot} ${escapeHtml(lead.nombre)}</span>
-                        <div class="d-flex align-items-center gap-1">
+                        <span class="crm-chat-name text-truncate" title="${escapeHtml(lead.nombre)}">${escapeHtml(lead.nombre)}</span>
+                        <span class="crm-chat-time">${escapeHtml(lead.ultimo_mensaje_human || lead.updated_human || '')}</span>
+                    </div>
+                    <div class="crm-chat-preview-row">
+                        <span class="crm-chat-snippet text-truncate">${snippetHtml}</span>
+                        <div class="d-flex align-items-center gap-1 flex-shrink-0">
                             ${unreadHtml}
-                            <span class="crm-chat-time">${escapeHtml(lead.updated_human || '')}</span>
+                            <span class="crm-badge" style="background: ${escapeHtml(stageMeta.color)}18; color: ${escapeHtml(stageMeta.color)}; font-size: 0.68rem; padding: 1px 6px;">
+                                ${escapeHtml(stageMeta.label)}
+                            </span>
                         </div>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-1">
-                        <span class="font-mono text-success" style="font-size: 0.73rem;">+${escapeHtml(lead.phone_number)}</span>
-                        <span class="small text-muted">${lead.asesor_nombre ? `<i class="fas fa-user-tie mr-1"></i>${escapeHtml(lead.asesor_nombre)} ` : ''}${statusIcon}</span>
-                    </div>
-                    <div class="d-flex align-items-center justify-content-between mt-1">
-                        <span class="crm-badge" style="background: ${escapeHtml(stageMeta.color)}18; color: ${escapeHtml(stageMeta.color)};">
-                            ${escapeHtml(stageMeta.label)}
-                        </span>
-                        ${Number(lead.valor_estimado) > 0 ? `<span class="font-mono small font-weight-bold text-dark">${formatCurrency(lead.valor_estimado)}</span>` : ''}
                     </div>
                 </div>
             `;
