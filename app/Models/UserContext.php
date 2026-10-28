@@ -62,9 +62,7 @@ class UserContext extends Model
         'ultimo_mensaje_cliente_at' => 'datetime',
     ];
 
-    /**
-     * Registra un evento en la línea de tiempo de auditoría del contacto.
-     */
+    // Agrega un evento al historial de actividad del contacto
     public function registrarActividad(string $tipo, string $descripcion, ?string $autor = null, array $meta = []): void
     {
         $timeline = is_array($this->timeline_actividades) ? $this->timeline_actividades : [];

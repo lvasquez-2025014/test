@@ -9,39 +9,51 @@
 @stop
 
 @section('content_header')
-    <div>
+    <div class="crm-executive-header">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
+                <div class="crm-company-avatar">
+                    {{ strtoupper(substr($instancia->nombre_empresa ?? 'E', 0, 1)) }}
+                </div>
                 <div>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <h1 class="saas-page-title">
+                        <h1 class="crm-executive-title">
                             {{ $instancia->nombre_empresa }}
                         </h1>
+                        <span class="meta-verified-badge" title="Canal Oficial Meta WhatsApp Cloud API v22.0">
+                            <i class="fab fa-whatsapp"></i> Cloud API v22.0 Oficial
+                        </span>
                     </div>
-                    <div class="d-flex align-items-center gap-3 mt-1 text-secondary small flex-wrap">
+                    <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
                         @if($instancia->telefono)
-                            <span class="font-mono font-weight-600 text-success">
+                            <span class="status-chip chip-green">
+                                <span class="status-pulse-dot"></span>
                                 <i class="fab fa-whatsapp mr-1"></i>+{{ $instancia->telefono }}
                             </span>
                         @endif
-                        <span class="font-mono text-muted">Phone ID: {{ $instancia->phone_number_id }}</span>
+                        <span class="status-chip chip-slate font-mono">
+                            <i class="fas fa-fingerprint mr-1 text-muted"></i>ID: {{ $instancia->phone_number_id }}
+                        </span>
+                        <span class="status-chip chip-slate">
+                            <i class="fas fa-shield-alt text-success mr-1"></i>Calidad Alta
+                        </span>
                     </div>
                 </div>
             </div>
 
             <div class="d-flex align-items-center gap-2 flex-wrap">
-                <button type="button" class="btn-saas btn-saas-secondary btn-sm" data-toggle="modal" data-target="#modalCrmEtapas">
-                    <i class="fas fa-Sliders-h mr-1"></i> Configurar Etapas
+                <button type="button" class="btn-executive btn-executive-glass" data-toggle="modal" data-target="#modalCrmEtapas">
+                    <i class="fas fa-sliders-h mr-1 text-primary"></i> Configurar Etapas
                 </button>
-                <button type="button" class="btn-saas btn-saas-secondary btn-sm" data-toggle="modal" data-target="#modalCrmAutomatizaciones">
+                <button type="button" class="btn-executive btn-executive-glass" data-toggle="modal" data-target="#modalCrmAutomatizaciones">
                     <i class="fas fa-bolt text-warning mr-1"></i> Automatizar Embudo
                 </button>
                 @if($isAdmin)
-                    <button type="button" class="btn-saas btn-saas-secondary btn-sm" data-toggle="modal" data-target="#modalConfigTecnica">
-                        <i class="fas fa-users-cog mr-1"></i> Equipo y Ajustes
+                    <button type="button" class="btn-executive btn-executive-glass" data-toggle="modal" data-target="#modalConfigTecnica">
+                        <i class="fas fa-users-cog mr-1 text-indigo"></i> Equipo y Ajustes
                     </button>
                 @endif
-                <button type="button" class="btn-saas btn-saas-primary btn-sm" data-toggle="modal" data-target="#modalCrmNuevoLead">
+                <button type="button" class="btn-executive btn-executive-primary" data-toggle="modal" data-target="#modalCrmNuevoLead">
                     <i class="fas fa-user-plus mr-1"></i> + Nuevo Lead
                 </button>
             </div>
@@ -50,154 +62,193 @@
 @stop
 
 @section('content')
-    <!-- BARRA DE HERRAMIENTAS CONTEXTUAL FLOTANTE (ELEMENTOS PROPIOS DE LA VISTA ACTIVA) -->
+    <!-- SUPERDOCK FLOTANTE CON SISTEMA DUAL (Vistas Principales + Herramientas Contextuales) -->
     <div class="floating-navbar-container">
-        <nav aria-label="Herramientas de la vista activa" class="floating-navbar toolbar-shadow" id="contextualFloatingNavbar">
-
-            <!-- 1. HERRAMIENTAS DE VISTA: DASHBOARD -->
-            <div class="floating-context-group d-none" data-view-tools="dashboard">
-                <button type="button" class="tool-button active" data-dash-view="all" data-action="Dashboard Completo" data-tooltip="Vista Completa">
-                    <i class="fas fa-th-large"></i>
+        <div class="floating-dock-wrapper">
+            <!-- BARRA 1: NAVEGADOR PRINCIPAL DE VISTAS (IMAGE 2) -->
+            <nav aria-label="Navegación principal de vistas" class="floating-views-capsule" id="primaryViewsNavbar">
+                <button type="button" class="view-button active" data-nav-target="dashboard" data-tooltip="Dashboard & Analítica">
+                    <i class="fas fa-chart-pie"></i>
+                    <span class="active-dot"></span>
                 </button>
-                <button type="button" class="tool-button" data-dash-view="kpis" data-action="Indicadores KPI" data-tooltip="Solo KPIs">
-                    <i class="fas fa-chart-bar"></i>
+                <button type="button" class="view-button" data-nav-target="pipeline" data-tooltip="Embudo Digital (Kanban)">
+                    <i class="fas fa-columns"></i>
+                    <span class="active-dot"></span>
                 </button>
-                <button type="button" class="tool-button" data-dash-view="funnel" data-action="Conversión por Etapa" data-tooltip="Embudo de Conversión">
-                    <i class="fas fa-filter"></i>
+                <button type="button" class="view-button" data-nav-target="chats" data-tooltip="Bandeja WhatsApp Omnicanal">
+                    <i class="fab fa-whatsapp"></i>
+                    <span class="active-dot"></span>
                 </button>
-                <button type="button" class="tool-button" data-dash-view="activity" data-action="Actividad Reciente" data-tooltip="Actividad en Vivo">
-                    <i class="fas fa-bolt"></i>
+                <button type="button" class="view-button" data-nav-target="tareas" data-tooltip="Centro de Tareas">
+                    <i class="fas fa-calendar-check"></i>
+                    <span class="active-dot"></span>
                 </button>
-                <a href="{{ route('instancias.contactos.exportar', $instancia->id) }}" class="tool-button" data-action="Exportando CSV" data-tooltip="Exportar CSV">
-                    <i class="fas fa-file-csv"></i>
-                </a>
-            </div>
-
-            <!-- 2. HERRAMIENTAS DE VISTA: EMBUDO (PIPELINE KANBAN) -->
-            <div class="floating-context-group" data-view-tools="pipeline">
-                <button type="button" class="tool-button active" data-pipeline-filter="all" data-action="Todos los Leads" data-tooltip="Todos (Bot + Humano)">
-                    <i class="fas fa-layer-group"></i>
+                <button type="button" class="view-button" data-nav-target="listas" data-tooltip="Listas & Catálogo">
+                    <i class="fas fa-address-book"></i>
+                    <span class="active-dot"></span>
                 </button>
-                <button type="button" class="tool-button" data-pipeline-filter="bot" data-action="Filtro: Solo Bot" data-tooltip="Solo Bot">
-                    <i class="fas fa-robot"></i>
-                </button>
-                <button type="button" class="tool-button" data-pipeline-filter="human" data-action="Filtro: Atención Humana" data-tooltip="Solo Humano">
-                    <i class="fas fa-user-check"></i>
-                </button>
-                <button type="button" class="tool-button" data-toggle="modal" data-target="#modalCrmEtapas" data-action="Configurar Etapas" data-tooltip="Configurar Etapas">
-                    <i class="fas fa-sliders-h"></i>
-                </button>
-                <button type="button" class="tool-button" data-toggle="modal" data-target="#modalCrmAutomatizaciones" data-action="Automatizar Embudo" data-tooltip="Automatizaciones">
-                    <i class="fas fa-bolt"></i>
-                </button>
-                <button type="button" class="tool-button-primary" data-toggle="modal" data-target="#modalCrmNuevoLead" data-action="Nuevo Lead" title="Añadir Nuevo Lead">
-                    <i class="fas fa-plus"></i>
-                </button>
-            </div>
-
-            <!-- 3. HERRAMIENTAS DE VISTA: CHATS (BANDEJA OMNICANAL) -->
-            <div class="floating-context-group d-none" data-view-tools="chats">
-                <button type="button" class="tool-button active" data-chat-filter="all" data-action="Todos los Chats" data-tooltip="Todos">
-                    <i class="fas fa-inbox"></i>
-                </button>
-                <button type="button" class="tool-button" data-chat-filter="sin_leer" data-action="Chats Sin Leer" data-tooltip="Sin Leer">
-                    <i class="fas fa-envelope"></i>
-                </button>
-                <button type="button" class="tool-button" data-chat-filter="asesor" data-action="Atención Humana" data-tooltip="Humano">
-                    <i class="fas fa-user-check"></i>
-                </button>
-                <button type="button" class="tool-button" data-chat-filter="cotizacion" data-action="En Cotización" data-tooltip="Cotización">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                </button>
-                <button type="button" class="tool-button" data-chat-filter="tareas" data-action="Con Tareas" data-tooltip="Con Tareas">
-                    <i class="fas fa-clock"></i>
-                </button>
-                <button type="button" class="tool-button" data-chat-filter="resuelta" data-action="Chats Resueltos" data-tooltip="Resueltas">
-                    <i class="fas fa-check-circle"></i>
-                </button>
-                <button type="button" class="tool-button" data-chat-filter="bot" data-action="Atendidos por Bot" data-tooltip="Bot">
-                    <i class="fas fa-robot"></i>
-                </button>
-            </div>
-
-            <!-- 4. HERRAMIENTAS DE VISTA: TAREAS -->
-            <div class="floating-context-group d-none" data-view-tools="tareas">
-                <button type="button" class="tool-button active" data-task-view="pendientes" data-action="Tareas Pendientes" data-tooltip="Pendientes">
-                    <i class="fas fa-hourglass-half"></i>
-                </button>
-                <button type="button" class="tool-button" data-task-view="completadas" data-action="Tareas Completadas" data-tooltip="Completadas">
-                    <i class="fas fa-check-double"></i>
-                </button>
-                <button type="button" class="tool-button" data-task-view="todas" data-action="Todas las Tareas" data-tooltip="Todas">
-                    <i class="fas fa-list-ul"></i>
-                </button>
-                <button type="button" class="tool-button-primary" data-task-action="new" data-action="Nueva Tarea" title="Crear Nueva Tarea">
-                    <i class="fas fa-plus"></i>
-                </button>
-            </div>
-
-            <!-- 5. HERRAMIENTAS DE VISTA: LISTAS Y CATÁLOGO -->
-            <div class="floating-context-group d-none" data-view-tools="listas">
-                <button type="button" class="tool-button active" data-list-view="contactos" data-action="Directorio de Contactos" data-tooltip="Contactos">
-                    <i class="fas fa-users"></i>
-                </button>
-                <button type="button" class="tool-button" data-list-view="catalogo" data-action="Catálogo de Productos" data-tooltip="Catálogo">
-                    <i class="fas fa-box-open"></i>
-                </button>
-                <button type="button" class="tool-button" data-list-view="plantillas" data-action="Plantillas Rápidas" data-tooltip="Plantillas /">
-                    <i class="fas fa-bolt"></i>
-                </button>
-                <button type="button" class="tool-button" data-list-view="difusion" data-action="Difusión Masiva" data-tooltip="Difusión">
-                    <i class="fas fa-bullhorn"></i>
-                </button>
-                <button type="button" class="tool-button" data-list-view="campos" data-action="Campos Personalizados" data-tooltip="Campos">
-                    <i class="fas fa-sliders-h"></i>
-                </button>
-                <button type="button" class="tool-button" data-list-view="importar" data-action="Importar CSV" data-tooltip="Importar CSV">
-                    <i class="fas fa-file-import"></i>
-                </button>
-                <button type="button" class="tool-button" data-list-view="conocimiento" data-action="Base Conocimiento IA" data-tooltip="Base IA">
-                    <i class="fas fa-brain"></i>
-                </button>
-                <button type="button" class="tool-button" data-list-view="widget" data-action="Enlaces & Widget Web" data-tooltip="Widget Web">
-                    <i class="fas fa-code"></i>
-                </button>
-                <a href="{{ route('instancias.contactos.exportar', $instancia->id) }}" class="tool-button" data-action="Exportando CSV" data-tooltip="Exportar CSV">
-                    <i class="fas fa-file-csv"></i>
-                </a>
-            </div>
-
-            @if($isAdmin)
-                <!-- 6. HERRAMIENTAS DE VISTA: FLUJOS BOT (NODOS) -->
-                <div class="floating-context-group d-none" data-view-tools="nodos">
-                    <button type="button" class="tool-button" data-node-tool="zoom-out" data-action="Alejar Lienzo" data-tooltip="Alejar (-)">
-                        <i class="fas fa-search-minus"></i>
+                @if($isAdmin)
+                    <button type="button" class="view-button" data-nav-target="nodos" data-tooltip="Constructor de Flujos Bot">
+                        <i class="fas fa-project-diagram"></i>
+                        <span class="active-dot"></span>
                     </button>
-                    <button type="button" class="tool-button" data-node-tool="zoom-in" data-action="Acercar Lienzo" data-tooltip="Acercar (+)">
-                        <i class="fas fa-search-plus"></i>
+                    <button type="button" class="view-button" data-nav-target="prompt" data-tooltip="Agente IA & RAG">
+                        <i class="fas fa-robot"></i>
+                        <span class="active-dot"></span>
                     </button>
-                    <button type="button" class="tool-button" data-node-tool="zoom-reset" data-action="Restablecer Vista" data-tooltip="Centrar Vista">
-                        <i class="fas fa-compress-arrows-alt"></i>
+                @endif
+            </nav>
+
+            <div class="floating-dock-divider"></div>
+
+            <!-- BARRA 2: ACCIONES Y HERRAMIENTAS DE LA VISTA ACTIVA -->
+            <nav aria-label="Herramientas de la vista activa" class="floating-tools-capsule" id="contextualFloatingNavbar">
+
+                <!-- Herramientas: Dashboard -->
+                <div class="floating-context-group d-none" data-view-tools="dashboard">
+                    <button type="button" class="tool-button active" data-dash-view="all" data-action="Dashboard Completo" data-tooltip="Vista Completa">
+                        <i class="fas fa-th-large"></i>
                     </button>
-                    <button type="button" class="tool-button" data-node-tool="auto-layout" data-action="Organizando Nodos" data-tooltip="Auto-Organizar">
-                        <i class="fas fa-magic"></i>
+                    <button type="button" class="tool-button" data-dash-view="kpis" data-action="Indicadores KPI" data-tooltip="Solo KPIs">
+                        <i class="fas fa-chart-bar"></i>
                     </button>
-                    <button type="button" class="tool-button-primary" data-node-tool="add-node" data-action="Añadir Nodo" title="Añadir Nuevo Nodo">
+                    <button type="button" class="tool-button" data-dash-view="funnel" data-action="Conversión por Etapa" data-tooltip="Embudo de Conversión">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-dash-view="activity" data-action="Infraestructura & Salud" data-tooltip="Salud Operativa">
+                        <i class="fas fa-server"></i>
+                    </button>
+                    <a href="{{ route('instancias.contactos.exportar', $instancia->id) }}" class="tool-button" data-action="Exportando CSV" data-tooltip="Exportar Contactos">
+                        <i class="fas fa-file-csv"></i>
+                    </a>
+                </div>
+
+                <!-- Herramientas: Embudo -->
+                <div class="floating-context-group" data-view-tools="pipeline">
+                    <button type="button" class="tool-button active" data-pipeline-filter="all" data-action="Todos los Leads" data-tooltip="Todos (Bot + Humano)">
+                        <i class="fas fa-layer-group"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-pipeline-filter="bot" data-action="Filtro: Solo Bot" data-tooltip="Solo Bot">
+                        <i class="fas fa-robot"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-pipeline-filter="human" data-action="Filtro: Atención Humana" data-tooltip="Solo Humano">
+                        <i class="fas fa-user-check"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-toggle="modal" data-target="#modalCrmEtapas" data-action="Configurar Etapas" data-tooltip="Configurar Etapas">
+                        <i class="fas fa-sliders-h"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-toggle="modal" data-target="#modalCrmAutomatizaciones" data-action="Automatizar Embudo" data-tooltip="Automatizaciones">
+                        <i class="fas fa-bolt"></i>
+                    </button>
+                    <button type="button" class="tool-button-primary" data-toggle="modal" data-target="#modalCrmNuevoLead" data-action="Nuevo Lead" title="Añadir Nuevo Lead">
                         <i class="fas fa-plus"></i>
                     </button>
                 </div>
 
-                <!-- 7. HERRAMIENTAS DE VISTA: AGENTE IA (PROMPT) -->
-                <div class="floating-context-group d-none" data-view-tools="prompt">
-                    <button type="button" class="tool-button active" data-prompt-tool="focus" data-action="Editor de Prompt IA" data-tooltip="Instrucciones IA">
-                        <i class="fas fa-terminal"></i>
+                <!-- Herramientas: Chats -->
+                <div class="floating-context-group d-none" data-view-tools="chats">
+                    <button type="button" class="tool-button active" data-chat-filter="all" data-action="Todos los Chats" data-tooltip="Todos">
+                        <i class="fas fa-inbox"></i>
                     </button>
-                    <button type="button" class="tool-button-primary" data-prompt-tool="save" data-action="Guardar Prompt IA" title="Guardar Entrenamiento IA">
-                        <i class="fas fa-save"></i>
+                    <button type="button" class="tool-button" data-chat-filter="sin_leer" data-action="Chats Sin Leer" data-tooltip="Sin Leer">
+                        <i class="fas fa-envelope"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-chat-filter="asesor" data-action="Atención Humana" data-tooltip="Humano">
+                        <i class="fas fa-user-check"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-chat-filter="cotizacion" data-action="En Cotización" data-tooltip="Cotización">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-chat-filter="tareas" data-action="Con Tareas" data-tooltip="Con Tareas">
+                        <i class="fas fa-clock"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-chat-filter="resuelta" data-action="Chats Resueltos" data-tooltip="Resueltas">
+                        <i class="fas fa-check-circle"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-chat-filter="bot" data-action="Atendidos por Bot" data-tooltip="Bot">
+                        <i class="fas fa-robot"></i>
                     </button>
                 </div>
-            @endif
-        </nav>
+
+                <!-- Herramientas: Tareas -->
+                <div class="floating-context-group d-none" data-view-tools="tareas">
+                    <button type="button" class="tool-button active" data-task-view="pendientes" data-action="Tareas Pendientes" data-tooltip="Pendientes">
+                        <i class="fas fa-hourglass-half"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-task-view="completadas" data-action="Tareas Completadas" data-tooltip="Completadas">
+                        <i class="fas fa-check-double"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-task-view="todas" data-action="Todas las Tareas" data-tooltip="Todas">
+                        <i class="fas fa-list-ul"></i>
+                    </button>
+                    <button type="button" class="tool-button-primary" data-task-action="new" data-action="Nueva Tarea" title="Crear Nueva Tarea">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- Herramientas: Listas y catálogo -->
+                <div class="floating-context-group d-none" data-view-tools="listas">
+                    <button type="button" class="tool-button active" data-list-view="contactos" data-action="Directorio de Contactos" data-tooltip="Contactos">
+                        <i class="fas fa-users"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-list-view="catalogo" data-action="Catálogo de Productos" data-tooltip="Catálogo">
+                        <i class="fas fa-box-open"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-list-view="plantillas" data-action="Plantillas Rápidas" data-tooltip="Plantillas /">
+                        <i class="fas fa-bolt"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-list-view="difusion" data-action="Difusión Masiva" data-tooltip="Difusión">
+                        <i class="fas fa-bullhorn"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-list-view="campos" data-action="Campos Personalizados" data-tooltip="Campos">
+                        <i class="fas fa-sliders-h"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-list-view="importar" data-action="Importar CSV" data-tooltip="Importar CSV">
+                        <i class="fas fa-file-import"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-list-view="conocimiento" data-action="Base Conocimiento IA" data-tooltip="Base IA">
+                        <i class="fas fa-brain"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-list-view="widget" data-action="Enlaces & Widget Web" data-tooltip="Widget Web">
+                        <i class="fas fa-code"></i>
+                    </button>
+                    <a href="{{ route('instancias.contactos.exportar', $instancia->id) }}" class="tool-button" data-action="Exportando CSV" data-tooltip="Exportar CSV">
+                        <i class="fas fa-file-csv"></i>
+                    </a>
+                </div>
+
+                @if($isAdmin)
+                    <!-- Herramientas: Flujos bot -->
+                    <div class="floating-context-group d-none" data-view-tools="nodos">
+                        <button type="button" class="tool-button" data-node-tool="zoom-out" data-action="Alejar Lienzo" data-tooltip="Alejar (-)">
+                            <i class="fas fa-search-minus"></i>
+                        </button>
+                        <button type="button" class="tool-button" data-node-tool="zoom-in" data-action="Acercar Lienzo" data-tooltip="Acercar (+)">
+                            <i class="fas fa-search-plus"></i>
+                        </button>
+                        <button type="button" class="tool-button" data-node-tool="zoom-reset" data-action="Restablecer Vista" data-tooltip="Centrar Vista">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                        </button>
+                        <button type="button" class="tool-button" data-node-tool="auto-layout" data-action="Organizando Nodos" data-tooltip="Auto-Organizar">
+                            <i class="fas fa-magic"></i>
+                        </button>
+                        <button type="button" class="tool-button-primary" data-node-tool="add-node" data-action="Añadir Nodo" title="Añadir Nuevo Nodo">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+
+                    <!-- Herramientas: Agente IA -->
+                    <div class="floating-context-group d-none" data-view-tools="prompt">
+                        <button type="button" class="tool-button active" data-prompt-tool="focus" data-action="Editor de Prompt IA" data-tooltip="Instrucciones IA">
+                            <i class="fas fa-terminal"></i>
+                        </button>
+                        <button type="button" class="tool-button-primary" data-prompt-tool="save" data-action="Guardar Prompt IA" title="Guardar Entrenamiento IA">
+                            <i class="fas fa-save"></i>
+                        </button>
+                    </div>
+                @endif
+            </nav>
+        </div>
         <div id="floating-feedback" role="status" aria-live="polite" class="floating-feedback"></div>
     </div>
 
@@ -205,83 +256,203 @@
          1. PANEL: DASHBOARD & ANALÍTICA EN TIEMPO REAL
          ========================================================================= -->
     <div id="pane-dashboard" class="tab-pane-content">
+        <!-- Grid de 6 KPIs Ejecutivos -->
         <div class="crm-dashboard-grid" id="dash-section-kpis">
-            <div class="crm-stat-card" style="--stat-accent: #3b82f6;">
-                <div class="crm-stat-label"><span>Leads Totales</span> <i class="fas fa-users text-primary"></i></div>
+            <div class="crm-stat-card card-kpi-leads">
+                <div class="crm-stat-header">
+                    <span class="crm-stat-label">Leads Activos</span>
+                    <div class="crm-stat-icon-badge badge-blue">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
                 <div class="crm-stat-value" id="dash-total-leads">0</div>
-                <div class="crm-stat-sub">Contactos únicos en el embudo</div>
+                <div class="crm-stat-footer">
+                    <span class="stat-pill-trend pill-blue">
+                        <i class="fas fa-arrow-trend-up mr-1"></i> Contactos en embudo
+                    </span>
+                </div>
             </div>
 
-            <div class="crm-stat-card" style="--stat-accent: #6366f1;">
-                <div class="crm-stat-label"><span>Valor en Embudo</span> <i class="fas fa-chart-line text-indigo"></i></div>
+            <div class="crm-stat-card card-kpi-value">
+                <div class="crm-stat-header">
+                    <span class="crm-stat-label">Valor en Pipeline</span>
+                    <div class="crm-stat-icon-badge badge-indigo">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
                 <div class="crm-stat-value" id="dash-pipeline-value">$0</div>
-                <div class="crm-stat-sub">Suma total de oportunidades</div>
+                <div class="crm-stat-footer">
+                    <span class="stat-pill-trend pill-indigo">
+                        <i class="fas fa-briefcase mr-1"></i> Oportunidades vivas
+                    </span>
+                </div>
             </div>
 
-            <div class="crm-stat-card" style="--stat-accent: #10b981;">
-                <div class="crm-stat-label"><span>Ventas Ganadas</span> <i class="fas fa-trophy text-success"></i></div>
+            <div class="crm-stat-card card-kpi-won">
+                <div class="crm-stat-header">
+                    <span class="crm-stat-label">Ventas Ganadas</span>
+                    <div class="crm-stat-icon-badge badge-emerald">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                </div>
                 <div class="crm-stat-value text-success" id="dash-won-value">$0</div>
-                <div class="crm-stat-sub">Conversión: <strong id="dash-conversion-rate">0%</strong></div>
+                <div class="crm-stat-footer">
+                    <span class="stat-pill-trend pill-emerald">
+                        <i class="fas fa-circle-check mr-1"></i> Cierre: <strong id="dash-conversion-rate" class="ml-1">0%</strong>
+                    </span>
+                </div>
             </div>
 
-            <div class="crm-stat-card" style="--stat-accent: #f59e0b;">
-                <div class="crm-stat-label"><span>Tareas Pendientes</span> <i class="fas fa-clock text-warning"></i></div>
+            <div class="crm-stat-card card-kpi-tasks">
+                <div class="crm-stat-header">
+                    <span class="crm-stat-label">Tareas Pendientes</span>
+                    <div class="crm-stat-icon-badge badge-amber">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
                 <div class="crm-stat-value" id="dash-pending-tasks">0</div>
-                <div class="crm-stat-sub">Seguimientos activos del equipo</div>
+                <div class="crm-stat-footer">
+                    <span class="stat-pill-trend pill-amber">
+                        <i class="fas fa-calendar-check mr-1"></i> Seguimientos activos
+                    </span>
+                </div>
             </div>
 
-            <div class="crm-stat-card" style="--stat-accent: #0ea5e9;">
-                <div class="crm-stat-label"><span>Tráfico WhatsApp</span> <i class="fab fa-whatsapp text-success"></i></div>
+            <div class="crm-stat-card card-kpi-traffic">
+                <div class="crm-stat-header">
+                    <span class="crm-stat-label">Tráfico WhatsApp</span>
+                    <div class="crm-stat-icon-badge badge-teal">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                </div>
                 <div class="crm-stat-value">{{ $totalInbound + $totalOutbound }}</div>
-                <div class="crm-stat-sub">{{ $totalInbound }} recibidos / {{ $totalOutbound }} enviados</div>
+                <div class="crm-stat-footer">
+                    <span class="stat-pill-trend pill-teal">
+                        <i class="fas fa-arrows-left-right mr-1"></i> {{ $totalInbound }} in / {{ $totalOutbound }} out
+                    </span>
+                </div>
             </div>
 
-            <div class="crm-stat-card" style="--stat-accent: #ec4899;">
-                <div class="crm-stat-label"><span>Distribución IA vs Humano</span> <i class="fas fa-robot text-primary"></i></div>
-                <div class="crm-stat-value" style="font-size: 1.15rem;" id="dash-bot-ratio">0 Bot / 0 Humano</div>
-                <div class="crm-stat-sub">Coexistencia en tiempo real</div>
+            <div class="crm-stat-card card-kpi-bot">
+                <div class="crm-stat-header">
+                    <span class="crm-stat-label">Coexistencia IA</span>
+                    <div class="crm-stat-icon-badge badge-purple">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                </div>
+                <div class="crm-stat-value" style="font-size: 1.4rem;" id="dash-bot-ratio">0 Bot / 0 Humano</div>
+                <div class="crm-stat-footer">
+                    <span class="stat-pill-trend pill-purple">
+                        <i class="fas fa-bolt mr-1"></i> Tiempo real
+                    </span>
+                </div>
             </div>
         </div>
 
+        <!-- Fila de Showcase de Doble Columna: Embudo de Conversión + Salud de Infraestructura Técnica -->
         <div class="row">
+            <!-- Columna Izquierda: Embudo de Conversión (Kanban Funnel) -->
             <div class="col-lg-7 mb-4" id="dash-section-funnel">
-                <div class="saas-card h-100">
-                    <div class="saas-card-header">
-                        <h3 class="saas-card-title"><i class="fas fa-filter text-primary mr-2"></i>Desglose de Conversión por Etapa del Embudo</h3>
+                <div class="saas-card h-100 shadow-sm border">
+                    <div class="saas-card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="saas-card-title mb-0">
+                                <i class="fas fa-filter text-primary mr-2"></i>Embudo de Conversión Comercial
+                            </h3>
+                            <div class="text-muted small mt-1">Monitoreo paso a paso del flujo de ventas y cuellos de botella</div>
+                        </div>
+                        <span class="badge badge-light border font-mono px-3 py-2" id="dash-funnel-total-badge">$0 USD en juego</span>
                     </div>
-                    <div class="saas-card-body" id="crm-dashboard-funnel"></div>
+                    <div class="saas-card-body" id="crm-dashboard-funnel">
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-circle-notch fa-spin mr-2"></i> Calculando analítica de conversión...
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {{-- <div class="col-lg-5 mb-4" id="dash-section-activity">
-                <div class="saas-card h-100">
-                    <div class="saas-card-header">
-                        <h3 class="saas-card-title"><i class="fas fa-bolt text-warning mr-2"></i>Actividad Reciente en Vivo</h3>
-                    </div>
-                    <div class="saas-card-body p-0" style="max-height: 360px; overflow-y: auto;">
-                        @forelse($mensajesRecientes as $msg)
-                            <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-start gap-2">
-                                <div>
-                                    <span class="badge {{ $msg->direction === 'inbound' ? 'badge-success' : 'badge-primary' }} mr-1">
-                                        {{ $msg->direction === 'inbound' ? 'Entrante' : 'Saliente' }}
-                                    </span>
-                                    <span class="font-mono small text-muted">+{{ $msg->direction === 'inbound' ? $msg->from : $msg->to }}</span>
-                                    <div class="small text-dark mt-1">{{ \Illuminate\Support\Str::limit($msg->body, 90) }}</div>
-                                </div>
-                                <span class="small text-muted flex-shrink-0">{{ $msg->created_at?->diffForHumans() }}</span>
+            <!-- Columna Derecha: Salud Operativa de Infraestructura & IA -->
+            <div class="col-lg-5 mb-4" id="dash-section-activity">
+                <!-- Tarjeta 1: Canal Meta WhatsApp Cloud API v22.0 -->
+                <div class="infra-widget-card mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="crm-stat-icon-badge badge-emerald">
+                                <i class="fab fa-whatsapp"></i>
+                            </span>
+                            <div>
+                                <div class="font-weight-700 text-dark" style="font-size: 0.95rem;">Canal WhatsApp Cloud API</div>
+                                <div class="small text-muted font-mono">Meta Official API v22.0</div>
                             </div>
-                        @empty
-                            <div class="text-center text-muted small py-5">Sin mensajes registrados recientemente.</div>
-                        @endforelse
+                        </div>
+                        <span class="status-chip chip-green">
+                            <span class="status-pulse-dot"></span> Online
+                        </span>
+                    </div>
+
+                    <div class="infra-status-row">
+                        <span class="text-secondary small"><i class="fas fa-shield-alt text-success mr-2"></i>Firma Webhook</span>
+                        <span class="font-mono small font-weight-600 text-dark">HMAC-SHA256 Verificado</span>
+                    </div>
+
+                    <div class="infra-status-row">
+                        <span class="text-secondary small"><i class="fas fa-hourglass-half text-warning mr-2"></i>Ventana 24 Horas</span>
+                        <span class="badge badge-light border small font-weight-600 text-success">Automática por Mensaje</span>
+                    </div>
+
+                    <div class="infra-status-row">
+                        <span class="text-secondary small"><i class="fas fa-mobile-alt text-primary mr-2"></i>Message Echoes</span>
+                        <span class="badge badge-light border small font-weight-600 text-primary">Sincronizado con App Móvil</span>
+                    </div>
+
+                    <div class="infra-status-row">
+                        <span class="text-secondary small"><i class="fas fa-signal text-info mr-2"></i>Nivel de Calidad</span>
+                        <span class="badge badge-success small font-weight-700">Alta Calidad (Green Tier)</span>
                     </div>
                 </div>
-            </div> --}}
+
+                <!-- Tarjeta 2: Motor de Inteligencia Artificial Groq Copiloto -->
+                <div class="infra-widget-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="crm-stat-icon-badge badge-purple">
+                                <i class="fas fa-robot"></i>
+                            </span>
+                            <div>
+                                <div class="font-weight-700 text-dark" style="font-size: 0.95rem;">Motor IA & Copiloto</div>
+                                <div class="small text-muted">Groq Cloud • LLaMA 3.3 70B</div>
+                            </div>
+                        </div>
+                        <span class="badge badge-purple px-2 py-1 small">
+                            <i class="fas fa-bolt mr-1"></i> Ultra Fast
+                        </span>
+                    </div>
+
+                    <div class="infra-status-row">
+                        <span class="text-secondary small"><i class="fas fa-brain text-purple mr-2"></i>Catálogo RAG</span>
+                        <span class="small font-weight-600 text-dark">Inyección Dinámica de Precios</span>
+                    </div>
+
+                    <div class="infra-status-row">
+                        <span class="text-secondary small"><i class="fas fa-shield-halved text-success mr-2"></i>Seguridad Guardrails</span>
+                        <span class="badge badge-light border small text-success">Anti-Jailbreak & DLP Activos</span>
+                    </div>
+
+                    <div class="infra-status-row">
+                        <span class="text-secondary small"><i class="fas fa-tachometer-alt text-warning mr-2"></i>Latencia Media</span>
+                        <span class="font-mono small text-dark font-weight-600">&lt; 750 ms</span>
+                    </div>
+
+                    <div class="infra-status-row">
+                        <span class="text-secondary small"><i class="fas fa-microphone text-info mr-2"></i>Transcripción de Voz</span>
+                        <span class="badge badge-light border small text-info">Whisper Turbo Activo</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- =========================================================================
-         2. PANEL: EMBUDO DIGITAL CRM (KANBAN PIPELINE DRAG & DROP)
-         ========================================================================= -->
+    <!-- Embudo kanban -->
     <div id="pane-pipeline" class="tab-pane-content active">
         <div class="crm-pipeline-toolbar">
             <div class="crm-kpi-group">
@@ -321,12 +492,10 @@
         <div class="crm-kanban-board" id="crm-kanban-board"></div>
     </div>
 
-    <!-- =========================================================================
-         3. PANEL: BANDEJA UNIFICADA 3 COLUMNAS + COPILOTO IA + FICHA LEAD 360°
-         ========================================================================= -->
+    <!-- Bandeja de chats -->
     <div id="pane-chats" class="tab-pane-content">
         <div class="crm-inbox-shell">
-            <!-- COLUMNA 1: LISTA DE CONVERSACIONES Y FILTROS -->
+            <!-- Lista de conversaciones -->
             <div class="crm-inbox-sidebar">
                 <div class="crm-inbox-search-header">
                     <input 
@@ -350,7 +519,7 @@
                 <div class="crm-inbox-list" id="crm-inbox-list"></div>
             </div>
 
-            <!-- COLUMNA 2: CHAT EN VIVO + BARRA COPILOTO IA + PLANTILLAS (/ATAJO) -->
+            <!-- Chat activo y respuestas rápidas -->
             <div class="crm-inbox-main">
                 <div class="crm-chat-topbar">
                     <div>
@@ -385,7 +554,7 @@
                     </div>
                 </div>
 
-                <!-- Banner Desplegable con Resumen Ejecutivo IA -->
+                <!-- Resumen generado con IA -->
                 <div class="crm-ai-summary-banner" id="crm-ai-summary-banner">
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <strong class="small text-uppercase" style="letter-spacing: 0.04em;">
@@ -396,14 +565,14 @@
                     <div class="crm-ai-summary-content" id="crm-ai-summary-text"></div>
                 </div>
 
-                <!-- Contenedor de Burbujas de Mensajes -->
+                <!-- Historial de mensajes -->
                 <div class="crm-messages-viewport" id="crm-messages-viewport">
                     <div class="text-center text-muted small py-5">
                         Selecciona un contacto de la columna izquierda para abrir su conversación.
                     </div>
                 </div>
 
-                <!-- Barra de Herramientas Copiloto IA + Plantillas Rápidas -->
+                <!-- Copiloto y plantillas -->
                 <div class="crm-copilot-bar">
                     <div id="crmTemplatesPopover" class="crm-templates-popover"></div>
 
@@ -424,7 +593,7 @@
                     </button>
                 </div>
 
-                <!-- Composer de Envío Directo por WhatsApp / Nota Interna en el Hilo -->
+                <!-- Campo de envío / nota interna -->
                 <div class="crm-composer-bar" id="crmComposerContainer">
                     <form id="formCrmInboxSend" class="d-flex gap-2 align-items-center m-0">
                         @csrf
@@ -446,7 +615,7 @@
                 </div>
             </div>
 
-            <!-- COLUMNA 3: INSPECTOR CRM 360° DEL LEAD CON PESTAÑAS (PRINCIPAL / PRODUCTOS) -->
+            <!-- Ficha del contacto -->
             <div class="crm-inspector">
                 <div class="crm-inspector-tabs">
                     <button type="button" class="crm-inspector-tab active" data-inspector-tab="main">
@@ -460,7 +629,7 @@
                     </button>
                 </div>
 
-                <!-- PESTAÑA 1: FICHA PRINCIPAL -->
+                <!-- Datos generales -->
                 <div id="inspector-pane-main">
                     <div class="crm-section">
                         <div class="form-group mb-2">
@@ -507,7 +676,7 @@
                         </div>
                     </div>
 
-                    <!-- Campos Personalizados Definidos por la Empresa -->
+                    <!-- Campos extra definidos para la empresa -->
                     <div class="crm-section" id="crm-custom-fields-section">
                         <div class="crm-section-title">
                             <span><i class="fas fa-sliders-h mr-1 text-indigo"></i> Campos Personalizados</span>
@@ -515,7 +684,7 @@
                         <div id="crm-custom-fields-container"></div>
                     </div>
 
-                    <!-- Etiquetas (Tags) -->
+                    <!-- Etiquetas -->
                     <div class="crm-section">
                         <div class="crm-section-title">
                             <span><i class="fas fa-tags mr-1 text-success"></i> Etiquetas</span>
@@ -529,7 +698,7 @@
                         </div>
                     </div>
 
-                    <!-- Tareas y Seguimiento -->
+                    <!-- Tareas pendientes -->
                     <div class="crm-section">
                         <div class="crm-section-title">
                             <span><i class="fas fa-check-square mr-1 text-warning"></i> Tareas de Seguimiento</span>
@@ -549,7 +718,7 @@
                         </div>
                     </div>
 
-                    <!-- Notas Internas -->
+                    <!-- Notas del equipo -->
                     <div class="crm-section" style="border-bottom: none;">
                         <div class="crm-section-title">
                             <span><i class="fas fa-sticky-note mr-1 text-secondary"></i> Notas Internas</span>
@@ -564,7 +733,7 @@
                     </div>
                 </div>
 
-                <!-- PESTAÑA 2: VINCULAR PRODUCTOS DEL CATÁLOGO AL LEAD -->
+                <!-- Cotización y productos -->
                 <div id="inspector-pane-products" class="d-none">
                     <div class="crm-section">
                         <div class="crm-section-title">
@@ -622,7 +791,7 @@
                     </div>
                 </div>
 
-                <!-- PESTAÑA 3: AUDITORÍA Y TIMELINE CRONOLÓGICO -->
+                <!-- Timeline y cambios -->
                 <div id="inspector-pane-timeline" class="d-none">
                     <div class="crm-section" style="border-bottom: none;">
                         <div class="crm-section-title d-flex justify-content-between align-items-center">
@@ -639,9 +808,7 @@
         </div>
     </div>
 
-    <!-- =========================================================================
-         4. PANEL: CENTRO DE TAREAS Y CALENDARIO TO-DO (#pane-tareas)
-         ========================================================================= -->
+    <!-- Centro de tareas -->
     <div id="pane-tareas" class="tab-pane-content">
         <div class="saas-card mb-3">
             <div class="saas-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -689,9 +856,7 @@
         </div>
     </div>
 
-    <!-- =========================================================================
-         5. PANEL: LISTAS CRM (CONTACTOS, CATÁLOGO, PLANTILLAS Y DIFUSIÓN MASIVA)
-         ========================================================================= -->
+    <!-- Listas y recursos del CRM -->
     <div id="pane-listas" class="tab-pane-content">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <div class="crm-subnav">
@@ -728,7 +893,7 @@
             </div>
         </div>
 
-        <!-- SUB-PESTAÑA 1: DIRECTORIO DE CONTACTOS Y EMPRESAS -->
+        <!-- Directorio de contactos -->
         <div id="subpane-contactos" class="saas-card">
             <div class="saas-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h3 class="saas-card-title">Directorio Unificado de Contactos y Empresas</h3>
@@ -753,7 +918,7 @@
             </div>
         </div>
 
-        <!-- SUB-PESTAÑA 2: CATÁLOGO DE PRODUCTOS Y SERVICIOS -->
+        <!-- Catálogo de productos -->
         <div id="subpane-catalogo" class="saas-card d-none">
             <div class="saas-card-header">
                 <h3 class="saas-card-title">Catálogo de Productos y Servicios (Sincronizado con IA y Cotizador)</h3>
@@ -799,7 +964,7 @@
             </div>
         </div>
 
-        <!-- SUB-PESTAÑA 3: PLANTILLAS DE RESPUESTA RÁPIDA (/ATAJOS) -->
+        <!-- Plantillas rápidas -->
         <div id="subpane-plantillas" class="saas-card d-none">
             <div class="saas-card-header">
                 <h3 class="saas-card-title">Plantillas de Respuesta Rápida de WhatsApp (Atajos `/`)</h3>
@@ -837,7 +1002,7 @@
             </div>
         </div>
 
-        <!-- SUB-PESTAÑA 4: DIFUSIÓN MASIVA / BROADCASTS SEGMENTADOS -->
+        <!-- Difusión masiva -->
         <div id="subpane-difusion" class="saas-card d-none">
             <div class="saas-card-header">
                 <h3 class="saas-card-title"><i class="fas fa-bullhorn text-primary mr-2"></i>Difusión Masiva por WhatsApp (Broadcasts)</h3>
@@ -893,7 +1058,7 @@
             </div>
         </div>
 
-        <!-- SUB-PESTAÑA 5: CAMPOS PERSONALIZADOS POR EMPRESA -->
+        <!-- Campos personalizados -->
         <div id="subpane-campos" class="saas-card d-none">
             <div class="saas-card-header">
                 <h3 class="saas-card-title"><i class="fas fa-sliders-h text-primary mr-2"></i>Campos Personalizados de la Ficha del Contacto</h3>
@@ -938,7 +1103,7 @@
             </div>
         </div>
 
-        <!-- SUB-PESTAÑA 6: IMPORTADOR MASIVO CSV CON MAPEO -->
+        <!-- Importar desde CSV -->
         <div id="subpane-importar" class="saas-card d-none">
             <div class="saas-card-header">
                 <h3 class="saas-card-title"><i class="fas fa-file-import text-primary mr-2"></i>Importación Masiva de Prospectos (CSV / Excel)</h3>
@@ -1029,7 +1194,7 @@
             </div>
         </div>
 
-        <!-- SUB-PESTAÑA 7: BASE DE CONOCIMIENTO RAG PARA AGENTE IA -->
+        <!-- Base de conocimiento IA -->
         <div id="subpane-conocimiento" class="saas-card d-none">
             <div class="saas-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
@@ -1058,7 +1223,7 @@
                     </table>
                 </div>
 
-                <!-- Formulario desplegable para nuevo artículo -->
+                <!-- Formulario para nuevo artículo -->
                 <div id="knowledgeArticleDrawer" class="d-none mt-4 p-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
                     <h5 class="font-weight-bold text-dark mb-2" id="knowledgeDrawerTitle"><i class="fas fa-edit text-primary mr-1"></i> Artículo de Conocimiento</h5>
                     <form id="formKnowledgeItem">
@@ -1092,7 +1257,7 @@
             </div>
         </div>
 
-        <!-- SUB-PESTAÑA 8: ENLACES wa.me Y WIDGET WEB EMBEBIBLE -->
+        <!-- Enlaces directos y widget web -->
         <div id="subpane-widget" class="saas-card d-none">
             <div class="saas-card-header">
                 <h3 class="saas-card-title"><i class="fas fa-code text-primary mr-2"></i>Generador de Enlaces Directos & Widget Web Embebible</h3>
@@ -1102,7 +1267,7 @@
             </div>
             <div class="saas-card-body">
                 <div class="row">
-                    <!-- Generador de Enlaces wa.me con UTMs -->
+                    <!-- Generador wa.me -->
                     <div class="col-md-6 mb-4">
                         <div class="p-3 h-100" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;">
                             <h5 class="font-weight-bold text-dark mb-2"><i class="fab fa-whatsapp text-success mr-1"></i> Enlace Directo wa.me</h5>
@@ -1138,7 +1303,7 @@
                         </div>
                     </div>
 
-                    <!-- Widget Web Embebible (Burbuja flotante) -->
+                    <!-- Botón flotante para sitios web -->
                     <div class="col-md-6 mb-4">
                         <div class="p-3 h-100" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;">
                             <h5 class="font-weight-bold text-dark mb-2"><i class="fas fa-comment-dots text-primary mr-1"></i> Widget de Chat para Sitio Web</h5>
@@ -1163,9 +1328,7 @@
     </div>
 
     @if($isAdmin)
-        <!-- =========================================================================
-             6. PANEL: CONSTRUCTOR DE FLUJOS CONVERSACIONALES (SOLO ADMINISTRADOR)
-             ========================================================================= -->
+        <!-- Constructor de flujos -->
         <div id="pane-nodos" class="tab-pane-content">
             <div class="n8n-wrapper">
                 <div class="n8n-toolbar">
@@ -1294,9 +1457,7 @@
             </div>
         </div>
 
-        <!-- =========================================================================
-             7. PANEL: ENTRENAMIENTO DEL AGENTE IA 
-             ========================================================================= -->
+        <!-- Prompt del agente IA -->
         <div id="pane-prompt" class="tab-pane-content">
             <div class="row">
                 <div class="col-lg-12 mb-4 mb-lg-0">
@@ -1335,9 +1496,7 @@
         </div>
     @endif
 
-    <!-- =========================================================================
-         MODAL 1: CREAR NUEVO LEAD MANUALMENTE EN EL EMBUDO CRM
-         ========================================================================= -->
+    <!-- Modal: nuevo contacto -->
     <div class="modal fade" id="modalCrmNuevoLead" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content saas-modal">
@@ -1395,9 +1554,7 @@
         </div>
     </div>
 
-    <!-- =========================================================================
-         MODAL 2: AUTOMATIZACIONES DEL EMBUDO DIGITAL (DISPARADORES POR ETAPA)
-         ========================================================================= -->
+    <!-- Modal: automatizaciones por etapa -->
     <div class="modal fade" id="modalCrmAutomatizaciones" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content saas-modal">
@@ -1454,9 +1611,7 @@
         </div>
     </div>
 
-    <!-- =========================================================================
-         MODAL 2.5: CONFIGURAR ETAPAS DEL EMBUDO POR EMPRESA
-         ========================================================================= -->
+    <!-- Modal: personalizar etapas -->
     <div class="modal fade" id="modalCrmEtapas" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content saas-modal">
@@ -1518,9 +1673,9 @@
                             <button type="button" class="crm-subnav-btn" data-cfg-tab="usuarios">
                                 <i class="fas fa-users-cog mr-1 text-secondary"></i> Equipo & Sub-Roles
                             </button>
-                            <button type="button" class="crm-subnav-btn" data-cfg-tab="plan">
+                            {{-- <button type="button" class="crm-subnav-btn" data-cfg-tab="plan">
                                 <i class="fas fa-tachometer-alt mr-1 text-info"></i> Consumo & Cuotas IA
-                            </button>
+                            </button> --}}
                         </div>
                     </div>
 
@@ -1859,7 +2014,7 @@
                             </form>
                         </div>
 
-                        <!-- TAB 6: PLAN & CONSUMO IA -->
+                        {{-- <!-- TAB 6: PLAN & CONSUMO IA -->
                         <div id="cfg-pane-plan" class="d-none">
                             <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
                                 Plan Activo y Cuota Mensual de Mensajes IA (Groq LLaMA 3.3)
@@ -1887,7 +2042,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>

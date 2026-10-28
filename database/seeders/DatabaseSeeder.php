@@ -10,21 +10,9 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
+    // Inicialización de la base de datos
     public function run(): void
     {
-
-        // Base de datos limpia sin seeders automáticos.
-        // Los registros se crean directamente por el usuario o desde la plataforma.
-        // User::factory(10)->create();
-
-        /*
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-        */
+        // No creamos datos de prueba automáticamente; las instancias se configuran desde el panel
     }
 }

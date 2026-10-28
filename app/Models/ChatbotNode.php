@@ -20,9 +20,7 @@ class ChatbotNode extends Model
         'auto_tags',
     ];
 
-    /**
-     * Garantizar que save(), update() y delete() de Eloquent filtren por la llave compuesta (instancia_id, id).
-     */
+    // Asegura que las operaciones de guardado y borrado incluyan instancia_id en la clave
     protected function setKeysForSaveQuery($query)
     {
         $query->where('id', $this->getAttribute('id'));
@@ -34,9 +32,7 @@ class ChatbotNode extends Model
         return $query;
     }
 
-    /**
-     * Scope para cargar nodos y sus opciones estrictamente aislados por instancia.
-     */
+    // Scope para traer los nodos y opciones de una instancia específica
     public function scopeForInstancia(Builder $query, int $instanciaId): Builder
     {
         return $query->where('instancia_id', $instanciaId)

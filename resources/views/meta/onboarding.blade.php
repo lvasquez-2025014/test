@@ -6,19 +6,19 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Conection</title>
 
-    <!-- Google Fonts & FontAwesome -->
+    <!-- Tipografías e iconos -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
 
-    <!-- Estilos Minimalistas -->
+    <!-- Estilos del onboarding -->
     <link rel="stylesheet" href="{{ asset('css/meta-onboarding.css') }}?v={{ file_exists(public_path('css/meta-onboarding.css')) ? filemtime(public_path('css/meta-onboarding.css')) : time() }}">
 </head>
 <body>
 
     <div class="minimal-container">
-        <!-- Icono WhatsApp Simple -->
+        <!-- Icono WhatsApp -->
         <div class="minimal-icon">
             <i class="fab fa-whatsapp"></i>
         </div>
@@ -41,13 +41,13 @@
             <p class="minimal-subtitle">
                 Por favor inicia sesion con tu cuenta de Business
             </p>
-            <!-- Botón Principal Oficial -->
+            <!-- Botón de inicio de sesión -->
             <button type="button" id="btnIniciarMeta" class="btn-meta">
                 <i class="fab fa-facebook-f"></i>
                 <span>Continuar con Facebook</span>
             </button>
 
-            <!-- Enlace Alternativo Secundario -->
+            <!-- Enlace alternativo si se bloquea la ventana emergente -->
             @php
                 $fullScreenUrl = $metaConfigId 
                     ? "https://business.facebook.com/messaging/whatsapp/onboard/?app_id={$metaAppId}&config_id={$metaConfigId}"
@@ -57,7 +57,7 @@
                 ¿No abre la ventana? Presina aqui para abrir en una nueva ventana
             </a>
 
-            <!-- Alerta de Estado / Carga -->
+            <!-- Estado de carga o mensaje de error -->
             <div id="statusAlert" class="status-alert {{ !empty($errorMessage) ? 'error' : '' }}" style="{{ !empty($errorMessage) ? 'display: block;' : '' }}">
                 @if(!empty($errorMessage))
                     <i class="fas fa-exclamation-circle mr-1"></i> {{ $errorMessage }}
@@ -76,7 +76,7 @@
          data-completar-url="{{ route('meta.onboarding.completar', ['token' => $token]) }}"
          style="display: none;"></div>
 
-    <!-- SDK de Meta y Script de Onboarding -->
+    <!-- SDK y script de onboarding -->
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/es_LA/sdk.js"></script>
     <script src="{{ asset('js/meta-onboarding.js') }}?v={{ file_exists(public_path('js/meta-onboarding.js')) ? filemtime(public_path('js/meta-onboarding.js')) : time() }}"></script>
 

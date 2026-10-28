@@ -28,12 +28,12 @@ Route::middleware(['auth'])->group(function () {
     // Consola principal para el Administrador
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-    // Rutas compartidas para Administradores y Usuarios de Empresa (Acceso Híbrido CRM)
+    // Endpoints compartidos para admin y asesores de empresa
     Route::middleware(['role:admin,empresa'])->prefix('instancias')->name('instancias.')->group(function () {
         Route::get('/', [InstanciaController::class, 'index'])->name('index');
         Route::get('/{id}', [InstanciaController::class, 'show'])->whereNumber('id')->name('show');
 
-        // Live Chat, Embudo Kanban, Ficha CRM 360°, Copiloto IA, Catálogo, Plantillas, Tareas y Difusión
+        // Operaciones de contactos, chat, notas, tareas y catálogos
         Route::post('/{id}/contactos', [InstanciaController::class, 'crearContactoManual'])->name('contactos.store');
         Route::get('/{id}/contactos/exportar', [InstanciaController::class, 'exportarContactosCsv'])->name('contactos.exportar');
         Route::post('/{id}/contactos/{contactoId}/toggle-bot', [InstanciaController::class, 'toggleBot'])->name('contactos.toggleBot');
@@ -52,7 +52,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{id}/automatizaciones', [InstanciaController::class, 'guardarAutomatizacionesEmbudo'])->name('automatizaciones.save');
         Route::post('/{id}/difusion', [InstanciaController::class, 'enviarDifusionMasiva'])->name('difusion.send');
 
-        // Fase 2 y 3: Cotizaciones PDF, Importación CSV, Horarios, Base Conocimiento RAG, Webhooks y API REST
+        // Cotizaciones, horarios de atención, webhooks y API
         Route::get('/{id}/contactos/{contactoId}/cotizacion/pdf', [InstanciaController::class, 'generarCotizacionPdf'])->name('contactos.cotizacion.pdf');
         Route::post('/{id}/contactos/{contactoId}/cotizacion/enviar', [InstanciaController::class, 'enviarCotizacionWhatsApp'])->name('contactos.cotizacion.enviar');
         Route::post('/{id}/contactos/importar', [InstanciaController::class, 'importarContactosCsv'])->name('contactos.importar');
@@ -63,7 +63,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{id}/api-token', [InstanciaController::class, 'generarApiToken'])->name('api-token.generate');
     });
 
-    // Rutas exclusivas para el rol Administrador (Creación de Instancias, Entrenamiento IA, Blueprints y Cuentas de Clientes)
+    // Rutas exclusivas de administración: crear instancias, prompt IA y usuarios
     Route::middleware(['role:admin'])->group(function () {
         // Generador y verificador de sesiones de onboarding QR
         Route::post('/meta/onboarding-token', [MetaOnboardingController::class, 'generarToken'])->name('meta.onboarding.token');
@@ -78,12 +78,12 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/{id}/usuarios/{userId}', [InstanciaController::class, 'eliminarUsuarioEmpresa'])->whereNumber('id')->name('usuarios.destroy');
         });
 
-        // Redirigir panel-contactos al Hub de Instancias
+        // Redirección para URLs antiguas de contactos
         Route::get('/panel-contactos', function () {
             return redirect()->route('instancias.index');
         })->name('contactos.index');
 
-        // API interna del constructor Blueprint (nodos y opciones)
+        // Endpoints para guardar y editar nodos y ramas del chatbot
         Route::prefix('chatbot')->name('chatbot.')->group(function () {
             Route::get('/', [ChatbotController::class, 'index'])->name('index');
             Route::get('/node/{id}', [ChatbotController::class, 'show'])->name('show');

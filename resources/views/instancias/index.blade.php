@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Botcitos')
+@section('title', 'Hub de Instancias — PrimeCRM')
 
 @section('content')
 
@@ -20,19 +20,7 @@
         </div>
     @endif
 
-    <!-- Métricas Principales (Stripe Minimalist Style) -->
-    {{-- <div class="row mb-4">
-        <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
-            <div class="metric-card">
-                <div>
-                    <div class="metric-label">Instancias Creadas</div>
-                    <div class="metric-value">{{ $totalInstancias ?? $instancias->count() }}</div>
-                </div>
-            </div>
-        </div>
-    </div> --}}
-
-    <!-- Barra de Estado y Acciones -->
+    <!-- Encabezado y acciones -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div class="d-flex align-items-center gap-2">
             <h5 class="m-0 font-weight-700" style="color: var(--text-primary); font-size: 1.1rem;">
@@ -107,10 +95,10 @@
                                     </span>
                                 </div>
                             </div>
-                            <!-- Botón Principal: Acceder al Entrenamiento del Bot -->
+                            <!-- Acceso al panel de la instancia -->
                             <a href="{{ route('instancias.show', $empresa->id) }}" class="btn-saas btn-saas-primary btn-block text-center" style="width: 100%;">
-                                <span>Entrenamiento del Sistema</span>
-                                <i class="fas fa-arrow-right"></i>
+                                <span>Abrir CRM & Suite Comercial</span>
+                                <i class="fas fa-arrow-right ml-2"></i>
                             </a>
                         </div>
 
@@ -130,7 +118,7 @@
                     </div>
                 </div>
 
-                <!-- Modal Editar Instancia (Clean SaaS) -->
+                <!-- Modal para editar datos de la instancia -->
                 <div class="modal fade" id="modalEditar{{ $empresa->id }}" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
                         <div class="modal-content saas-modal">
@@ -182,7 +170,7 @@
         </div>
     @endif
 
-    <!-- Modal Crear Nueva Instancia (Flujo Onboarding QR & Enlace) -->
+    <!-- Modal para vincular nueva empresa con QR -->
     <div class="modal fade" id="modalCrearInstancia" tabindex="-1" role="dialog" aria-labelledby="modalCrearLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content saas-modal">
@@ -198,13 +186,13 @@
                 </div>
 
                 <div class="modal-body p-4">
-                    <!-- Flujo Principal: Código QR y Enlace de Invitación -->
+                    <!-- Código QR y enlace de invitación -->
                     <div id="boxOnboardingQR" class="qr-modal-container">
                         <h5 class="font-weight-800 mb-1" style="color: var(--text-primary); font-size: 1.25rem;">
                             Envia esto
                         </h5>
 
-                        <!-- Tarjeta con el Código QR -->
+                        <!-- QR generado -->
                         <div class="qr-image-card">
                             <div id="qrLoadingSpinner" style="width: 210px; height: 210px; display: flex; align-items: center; justify-content: center;">
                                 <i class="fas fa-circle-notch fa-spin text-primary" style="font-size: 2.2rem;"></i>
@@ -212,14 +200,14 @@
                             <img id="qrOnboardingImg" src="" alt="Código QR de Vinculación" style="display: none;" onload="document.getElementById('qrLoadingSpinner').style.display='none'; this.style.display='block';">
                         </div>
 
-                        <!-- Indicador de Espera en Vivo -->
+                        <!-- Estado del sondeo -->
                         <div>
                             <div id="qrStatusBadge" class="qr-tracker-badge is-waiting">
                                 <span id="qrStatusText">Esperando vinculacion</span>
                             </div>
                         </div>
 
-                        <!-- Enlace para Copiar y Enviar -->
+                        <!-- Enlace para compartir -->
                         <div class="onboarding-link-box" style="max-width: 520px; margin: 0 auto 16px;">
                             <input type="text" id="inputOnboardingUrl" class="onboarding-link-input" readonly value="Generando enlace...">
                             <button type="button" class="btn-saas btn-saas-secondary btn-saas-sm py-1 px-3" onclick="copiarEnlaceOnboarding()">
@@ -231,7 +219,7 @@
                         </div>
                     </div>
 
-                    <!-- Mensaje de Éxito Automático cuando la Empresa Completa la Conexión -->
+                    <!-- Confirmación de vinculación exitosa -->
                     <div id="boxOnboardingSuccess" class="p-4 rounded-lg text-center" style="display: none; background-color: var(--brand-wa-subtle); border: 1px solid rgba(16, 185, 129, 0.3);">
                         <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; background-color: var(--brand-wa); color: white; font-size: 1.75rem;">
                             <i class="fas fa-check"></i>
@@ -253,7 +241,7 @@
         </div>
     </div>
 
-    <!-- Contenedor de configuración para el SDK de Meta & Onboarding QR -->
+    <!-- Metadatos de configuración para onboarding -->
     <div id="meta-signup-config" 
          data-app-id="{{ $metaAppId }}" 
          data-config-id="{{ $metaConfigId ?? '' }}" 
@@ -263,7 +251,7 @@
 @stop
 
 @section('js')
-    <!-- SDK Oficial de Facebook para Meta Embedded Signup -->
+    <!-- SDK de Facebook -->
     <script async defer crossorigin="anonymous" src="https://connect.facebook.net/es_LA/sdk.js"></script>
     <script src="{{ asset('js/instancias.js') }}?v={{ filemtime(public_path('js/instancias.js')) }}"></script>
 @stop

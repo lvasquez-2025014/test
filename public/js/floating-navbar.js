@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const instanciaId = configEl?.getAttribute('data-instancia-id') || '';
 
     const sidebarLinks = document.querySelectorAll('.sidebar-tab-link');
+    const viewButtons = document.querySelectorAll('.view-button[data-nav-target]');
     const contextGroups = document.querySelectorAll('.floating-context-group[data-view-tools]');
 
     const panes = {
@@ -45,6 +46,12 @@ document.addEventListener('DOMContentLoaded', function () {
             item.classList.toggle('active', attr === normalized);
         });
 
+        // Marcamos el botón activo en la barra flotante de vistas (Barra 1)
+        viewButtons.forEach(btn => {
+            const attr = (btn.getAttribute('data-nav-target') || '').toLowerCase();
+            btn.classList.toggle('active', attr === normalized);
+        });
+
         // Mostramos las herramientas contextuales de la vista elegida
         contextGroups.forEach(group => {
             const viewKey = (group.getAttribute('data-view-tools') || '').toLowerCase();
@@ -83,6 +90,14 @@ document.addEventListener('DOMContentLoaded', function () {
         item.addEventListener('click', function (e) {
             e.preventDefault();
             switchTab(this.getAttribute('data-nav') || this.textContent);
+        });
+    });
+
+    // Clicks en la barra flotante de vistas (Barra 1 - Image 2)
+    viewButtons.forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            switchTab(this.getAttribute('data-nav-target'));
         });
     });
 

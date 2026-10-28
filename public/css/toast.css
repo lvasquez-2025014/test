@@ -1,6 +1,4 @@
-/* ==========================================================================
-   TOAST NOTIFICATIONS FLOTANTES (SUPERIOR DERECHA)
-   ========================================================================== */
+/* Notificaciones toast flotantes */
 .toast-floating-container {
     position: fixed;
     top: 24px;
@@ -35,7 +33,7 @@
     transform: translateX(40px);
 }
 
-/* Éxito */
+/* Notificación de éxito */
 .saas-toast-success {
     border-left: 4px solid #10b981;
 }
@@ -48,7 +46,7 @@
     flex-shrink: 0;
 }
 
-/* Error / Alerta */
+/* Notificación de error */
 .saas-toast-danger {
     border-left: 4px solid #ef4444;
 }

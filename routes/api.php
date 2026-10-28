@@ -33,7 +33,7 @@ Route::middleware(['throttle:15,1', 'auth:api'])->group(function () {
     Route::post('/openai/text', [OpenaiController::class, 'funRespuestaIA']);
 });
 
-// API REST v1 para Integraciones Externas (Zapier, Make, Landings, Formularios, ERPs)
+// API para integraciones externas (Zapier, Make, landings, etc.)
 Route::prefix('v1')->middleware('throttle:120,1')->group(function () {
     Route::get('/leads', [App\Http\Controllers\Api\CrmApiController::class, 'listarLeads']);
     Route::post('/leads', [App\Http\Controllers\Api\CrmApiController::class, 'crearOActualizarLead']);

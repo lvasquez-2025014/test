@@ -16,9 +16,7 @@ class CrmApiController extends Controller
         protected WhatsAppService $whatsAppService
     ) {}
 
-    /**
-     * Autentica la petición usando el api_token asignado a la instancia.
-     */
+    // Valida el api_token de la instancia
     protected function autenticarInstancia(Request $request): ?Instancia
     {
         $token = $request->bearerToken() ?: $request->header('X-API-Key') ?: $request->input('api_token');
@@ -29,10 +27,7 @@ class CrmApiController extends Controller
         return Instancia::where('api_token', $token)->where('is_active', true)->first();
     }
 
-    /**
-     * GET /api/v1/leads
-     * Lista prospectos de la empresa con filtros por etapa, etiqueta o búsqueda.
-     */
+    // Lista prospectos con filtros por etapa o término de búsqueda
     public function listarLeads(Request $request)
     {
         $instancia = $this->autenticarInstancia($request);
@@ -70,10 +65,7 @@ class CrmApiController extends Controller
         ]);
     }
 
-    /**
-     * POST /api/v1/leads
-     * Crea o actualiza un prospecto desde fuentes externas (Zapier, Make, landings, formularios web, etc.).
-     */
+    // Alta o actualización de prospectos desde formularios web, Zapier o Make
     public function crearOActualizarLead(Request $request)
     {
         $instancia = $this->autenticarInstancia($request);
@@ -162,7 +154,7 @@ class CrmApiController extends Controller
             'utm' => $validated['origen_utm'] ?? null,
         ]);
 
-        // Si se envió un mensaje_inicial, se envía como primer contacto si la ventana o plantilla lo permite
+        // Si viene con mensaje inicial, lo mandamos por WhatsApp
         if (!empty($validated['mensaje_inicial']) && !empty($instancia->access_token) && !empty($instancia->phone_number_id)) {
             $this->whatsAppService->enviarCloud($cleanPhone, [
                 'type' => 'text',
@@ -177,10 +169,7 @@ class CrmApiController extends Controller
         ], $esNuevo ? 201 : 200);
     }
 
-    /**
-     * POST /api/v1/mensajes
-     * Envía un mensaje directo por WhatsApp a través de la API REST.
-     */
+    // Envío de mensajes de texto, imagen o documentos por WhatsApp
     public function enviarMensaje(Request $request)
     {
         $instancia = $this->autenticarInstancia($request);

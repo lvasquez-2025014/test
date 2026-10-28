@@ -17,17 +17,13 @@ class Role extends Model
         'description',
     ];
 
-    /**
-     * Usuarios asociados a este rol en la base de datos
-     */
+    // Usuarios con este rol
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
     }
 
-    /**
-     * Permisos asociados a este rol en la base de datos
-     */
+    // Permisos otorgados a este rol
     public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class);

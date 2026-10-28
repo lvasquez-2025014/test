@@ -16,9 +16,7 @@ class Permission extends Model
         'description',
     ];
 
-    /**
-     * Roles asociados a este permiso en la base de datos
-     */
+    // Roles asociados a este permiso
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class);

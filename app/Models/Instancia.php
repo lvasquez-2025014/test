@@ -82,10 +82,7 @@ class Instancia extends Model
         );
     }
 
-    /**
-     * Obtiene las etapas del embudo configuradas por la empresa o las etapas base por defecto,
-     * garantizando siempre las etapas finales 'ganado' y 'perdido'.
-     */
+    // Devuelve las etapas del embudo (personalizadas o base), asegurando 'ganado' y 'perdido'
     public function obtenerEtapas(): array
     {
         $custom = $this->etapas_embudo;
@@ -115,9 +112,7 @@ class Instancia extends Model
         return $normalizadas ?: UserContext::ETAPAS;
     }
 
-    /**
-     * Verifica si la hora actual (o una fecha dada) se encuentra dentro del horario comercial configurado.
-     */
+    // Revisa si estamos dentro del horario de atención de la empresa
     public function estaEnHorarioAtencion(?\DateTimeInterface $dateTime = null): bool
     {
         $cfg = $this->horario_atencion;
@@ -152,9 +147,7 @@ class Instancia extends Model
         return ($horaActual >= $inicio && $horaActual <= $fin);
     }
 
-    /**
-     * Obtiene el mensaje automático de fuera de horario.
-     */
+    // Mensaje de respuesta automática fuera de horario
     public function obtenerMensajeFueraHorario(): ?string
     {
         $cfg = $this->horario_atencion;
@@ -167,9 +160,7 @@ class Instancia extends Model
             : 'En este momento nuestro equipo está fuera de horario comercial. Hemos recibido tu mensaje y te responderemos a primera hora laboral.';
     }
 
-    /**
-     * Valida si la instancia tiene cuota disponible para consumir tokens/mensajes de IA.
-     */
+    // Verifica si la instancia no ha superado el cupo mensual de mensajes de IA
     public function puedeConsumirIa(): bool
     {
         $limite = $this->limite_mensajes_ia_mes ?? 2000;

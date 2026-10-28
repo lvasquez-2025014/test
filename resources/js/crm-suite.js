@@ -98,6 +98,10 @@ document.addEventListener('DOMContentLoaded', function () {
         setElText('dash-bot-ratio', `${botActiveCount} Bot / ${humanActiveCount} Humano`);
 
         const funnelContainer = document.getElementById('crm-dashboard-funnel');
+        const funnelTotalBadge = document.getElementById('dash-funnel-total-badge');
+        if (funnelTotalBadge) {
+            funnelTotalBadge.textContent = `${formatCurrency(totalPipelineVal)} en juego`;
+        }
         if (funnelContainer) {
             funnelContainer.innerHTML = '';
             Object.entries(stages).forEach(([key, meta]) => {
@@ -105,18 +109,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 const pct = totalLeads > 0 ? Math.round((stageLeads.length / totalLeads) * 100) : 0;
                 const sum = stageLeads.reduce((acc, l) => acc + (Number(l.valor_estimado) || 0), 0);
 
-                const row = document.createElement('div');
-                row.className = 'crm-funnel-row';
-                row.innerHTML = `
+                const card = document.createElement('div');
+                card.className = 'crm-funnel-card';
+                card.innerHTML = `
                     <div class="crm-funnel-header">
-                        <span><i class="${escapeHtml(meta.icon)} mr-1" style="color:${escapeHtml(meta.color)}"></i> ${escapeHtml(meta.label)}</span>
-                        <span class="font-mono">${stageLeads.length} leads (${pct}%) — <strong>${formatCurrency(sum)}</strong></span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="crm-stage-icon-badge" style="background:${escapeHtml(meta.color)}18; color:${escapeHtml(meta.color)}">
+                                <i class="${escapeHtml(meta.icon)}"></i>
+                            </span>
+                            <div>
+                                <span class="font-weight-700 text-dark" style="font-size:0.88rem;">${escapeHtml(meta.label)}</span>
+                                <span class="badge badge-light border ml-1 font-mono text-muted" style="font-size:0.75rem;">${stageLeads.length} ${stageLeads.length === 1 ? 'lead' : 'leads'} (${pct}%)</span>
+                            </div>
+                        </div>
+                        <span class="font-mono font-weight-700 text-dark" style="font-size:0.95rem;">${formatCurrency(sum)}</span>
                     </div>
                     <div class="crm-funnel-track">
-                        <div class="crm-funnel-fill" style="width: ${Math.max(pct, stageLeads.length > 0 ? 6 : 0)}%; background: ${escapeHtml(meta.color)};"></div>
+                        <div class="crm-funnel-fill" style="width: ${Math.max(pct, stageLeads.length > 0 ? 8 : 0)}%; background: linear-gradient(90deg, ${escapeHtml(meta.color)}, ${escapeHtml(meta.color)}dd);"></div>
                     </div>
                 `;
-                funnelContainer.appendChild(row);
+                funnelContainer.appendChild(card);
             });
         }
     }

@@ -5,22 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', config('app.name', 'Prime T'))</title>
+    <title>@yield('title', 'PrimeCRM — Suite CRM Conversacional')</title>
 
-    <!-- Google Fonts -->
+    <!-- Tipografías -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <!-- FontAwesome 6 Icons -->
+    <!-- Iconos FontAwesome -->
     <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}?v={{ file_exists(public_path('vendor/fontawesome-free/css/all.min.css')) ? filemtime(public_path('vendor/fontawesome-free/css/all.min.css')) : time() }}">
 
-    <!-- Custom Dashboard Styles -->
+    <!-- Estilos del dashboard -->
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}?v={{ file_exists(public_path('css/dashboard.css')) ? filemtime(public_path('css/dashboard.css')) : time() }}">
     @yield('styles')
     @yield('css')
 </head>
 <body>
-    <!-- Toast Notifications Flotantes (Superior Derecha) -->
+    <!-- Notificaciones toast -->
     @if(session('success') || session('error') || session('status'))
         <div class="toast-floating-container" id="toastFloatingContainer">
             @if(session('success'))
@@ -66,10 +66,10 @@
     @endif
 
     <div class="app-wrapper">
-        <!-- Sidebar Modular -->
+        <!-- Barra lateral -->
         @include('components.sidebar')
 
-        <!-- Contenido Central -->
+        <!-- Contenedor principal -->
         <div class="app-main">
             <main class="main-content">
                 @hasSection('content_header')
@@ -83,16 +83,16 @@
         </div>
     </div>
 
-    <!-- Vendor Scripts -->
+    <!-- Librerías JS -->
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-    <!-- Scripts del Dashboard -->
+    <!-- Scripts interactivos -->
     <script src="{{ asset('js/dashboard.js') }}"></script>
     @yield('scripts')
     @yield('js')
     @stack('scripts')
-    <!-- Auto-hide Toasts en 3 segundos -->
+    <!-- Ocultar toasts automáticamente tras 3 segundos -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const toasts = document.querySelectorAll('.saas-toast');
