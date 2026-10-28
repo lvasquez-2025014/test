@@ -1279,6 +1279,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // Formateador de texto y markdown enriquecido estilo WhatsApp
+    function formatChatContent(rawText) {
+        if (!rawText) return '';
+        let escaped = escapeHtml(rawText);
+
+        // Convertir **negrita** en <strong>negrita</strong>
+        escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // Convertir *cursiva* o _cursiva_
+        escaped = escaped.replace(/(^|[^*])\*(?!\s)([^*]+?)(?<!\s)\*(?!\*)/g, '$1<em>$2</em>');
+        escaped = escaped.replace(/(^|[^_])_(?!\s)([^_]+?)(?<!\s)_(?!_)/g, '$1<em>$2</em>');
+        // Convertir URLs en enlaces cliqueables
+        escaped = escaped.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener" class="chat-bubble-link">$1</a>');
+        // Convertir saltos de línea \n en <br>
+        escaped = escaped.replace(/\n/g, '<br>');
+
+        return escaped;
+    }
+
     // Chat en tiempo real, notas internas y copiloto IA
     function formatMessageBubble(msg) {
         const timeStr = msg.created_at
@@ -1293,7 +1311,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <span><i class="fas fa-lock mr-1"></i>Nota Interna del Equipo (Invisible para el cliente)</span>
                     <span>${escapeHtml(timeStr)}</span>
                 </div>
-                <div>${escapeHtml(msg.body || '')}</div>
+                <div>${formatChatContent(msg.body || '')}</div>
             `;
             return noteBubble;
         }
@@ -1316,13 +1334,13 @@ document.addEventListener('DOMContentLoaded', function () {
         let statusIconHtml = '';
         if (isOut) {
             if (msg.status === 'read') {
-                statusIconHtml = `<i class="fas fa-check-double ml-1" style="color:#38bdf8;" title="Leído por el cliente"></i>`;
+                statusIconHtml = `<i class="fas fa-check-double ml-1 tick-read" title="Leído por el cliente"></i>`;
             } else if (msg.status === 'delivered') {
-                statusIconHtml = `<i class="fas fa-check-double ml-1" style="opacity:0.75;" title="Entregado"></i>`;
+                statusIconHtml = `<i class="fas fa-check-double ml-1 tick-delivered" title="Entregado"></i>`;
             } else if (msg.status === 'failed') {
                 statusIconHtml = `<i class="fas fa-exclamation-triangle text-danger ml-1" title="${escapeHtml(msg.error_message || 'Error de entrega')}"></i>`;
             } else {
-                statusIconHtml = `<i class="fas fa-check ml-1" style="opacity:0.75;" title="Enviado"></i>`;
+                statusIconHtml = `<i class="fas fa-check ml-1 tick-delivered" title="Enviado"></i>`;
             }
         }
 
@@ -1330,7 +1348,7 @@ document.addEventListener('DOMContentLoaded', function () {
         bubble.className = `chat-bubble ${isOut ? 'chat-bubble-outbound' : 'chat-bubble-inbound'}`;
         bubble.innerHTML = `
             ${mediaHtml}
-            <div class="chat-bubble-text">${escapeHtml(msg.body || '')}</div>
+            <div class="chat-bubble-text">${formatChatContent(msg.body || '')}</div>
             <div class="chat-bubble-time">${escapeHtml(timeStr)}${statusIconHtml}</div>
         `;
         return bubble;
