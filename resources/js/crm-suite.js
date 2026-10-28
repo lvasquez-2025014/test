@@ -2467,6 +2467,22 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    // Copiar horario comercial de lunes al resto de la semana laboral
+    document.getElementById('btnCopiarHorarioSemana')?.addEventListener('click', function () {
+        const lunesStart = document.querySelector('.cfg-day-start[data-day="lunes"]')?.value || '08:00';
+        const lunesEnd = document.querySelector('.cfg-day-end[data-day="lunes"]')?.value || '18:00';
+        const lunesActive = document.querySelector('.cfg-day-active[data-day="lunes"]')?.checked ?? true;
+        ['martes', 'miercoles', 'jueves', 'viernes'].forEach(d => {
+            const chk = document.querySelector(`.cfg-day-active[data-day="${d}"]`);
+            const s = document.querySelector(`.cfg-day-start[data-day="${d}"]`);
+            const e = document.querySelector(`.cfg-day-end[data-day="${d}"]`);
+            if (chk) chk.checked = lunesActive;
+            if (s) s.value = lunesStart;
+            if (e) e.value = lunesEnd;
+        });
+        alert('¡Horario de Lunes copiado exitosamente a Martes, Miércoles, Jueves y Viernes!');
+    });
+
     document.getElementById('formConfigHorario')?.addEventListener('submit', async function (e) {
         e.preventDefault();
         const activo = document.getElementById('cfgHorarioActivo')?.checked;

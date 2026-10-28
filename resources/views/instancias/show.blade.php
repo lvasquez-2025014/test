@@ -31,7 +31,7 @@
                 </button>
                 @if($isAdmin)
                     <button type="button" class="btn-executive btn-executive-glass" data-toggle="modal" data-target="#modalConfigTecnica">
-                        <i class="fas fa-users-cog mr-1 text-indigo"></i> Equipo y Ajustes
+                        <i class="fas fa-sliders-h mr-1 text-primary"></i> Ajustes del Negocio
                     </button>
                 @endif
                 <button type="button" class="btn-executive btn-executive-primary" data-toggle="modal" data-target="#modalCrmNuevoLead">
@@ -1597,329 +1597,337 @@
     </div>
 
     @if($isAdmin)
-        <!-- Modal: ajustes generales de la empresa -->
+        <!-- Modal: Ajustes y Configuración del Negocio -->
         <div class="modal fade" id="modalConfigTecnica" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
                 <div class="modal-content saas-modal">
                     <div class="modal-header saas-modal-header d-flex justify-content-between align-items-center">
-                        <h5 class="modal-title font-weight-bold text-dark mb-0">
-                            <i class="fas fa-sliders-h mr-2 text-primary"></i> Configuración Integral de la Empresa
-                        </h5>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="crm-avatar" style="width: 34px; height: 34px; background: #e0f2fe; color: #0284c7; font-size: 0.95rem;">
+                                <i class="fas fa-sliders-h"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title font-weight-bold text-dark mb-0">
+                                    Ajustes y Parámetros del Negocio
+                                </h5>
+                                <div class="small text-muted" style="font-size: 0.76rem;">Configuración comercial, horarios de atención para Guatemala y equipo</div>
+                            </div>
+                        </div>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
                     </div>
 
-                    <!-- Pestañas de configuración -->
-                    <div class="p-3 bg-light border-bottom">
+                    <!-- 4 Pestañas Principales y Claras -->
+                    <div class="px-4 py-3 bg-light border-bottom">
                         <div class="crm-subnav" id="settingsModalNav">
                             <button type="button" class="crm-subnav-btn active" data-cfg-tab="general">
-                                <i class="fab fa-whatsapp mr-1 text-success"></i> WhatsApp & Instancia
+                                <i class="fab fa-whatsapp mr-1 text-success"></i> Mi Negocio & WhatsApp
                             </button>
                             <button type="button" class="crm-subnav-btn" data-cfg-tab="horarios">
-                                <i class="fas fa-clock mr-1 text-warning"></i> Horarios Comerciales
-                            </button>
-                            <button type="button" class="crm-subnav-btn" data-cfg-tab="fiscal">
-                                <i class="fas fa-file-invoice mr-1 text-primary"></i> Facturación & Cotizaciones
-                            </button>
-                            <button type="button" class="crm-subnav-btn" data-cfg-tab="webhooks">
-                                <i class="fas fa-network-wired mr-1 text-indigo"></i> Webhooks & API REST
+                                <i class="fas fa-clock mr-1 text-warning"></i> Horario de Atención (Guatemala)
                             </button>
                             <button type="button" class="crm-subnav-btn" data-cfg-tab="usuarios">
-                                <i class="fas fa-users-cog mr-1 text-secondary"></i> Equipo & Sub-Roles
+                                <i class="fas fa-users mr-1 text-primary"></i> Equipo de Ventas
                             </button>
-                            {{-- <button type="button" class="crm-subnav-btn" data-cfg-tab="plan">
-                                <i class="fas fa-tachometer-alt mr-1 text-info"></i> Consumo & Cuotas IA
-                            </button> --}}
+                            <button type="button" class="crm-subnav-btn" data-cfg-tab="fiscal">
+                                <i class="fas fa-file-invoice mr-1 text-indigo"></i> Cotizaciones & Moneda
+                            </button>
                         </div>
                     </div>
 
-                    <div class="modal-body p-4" style="max-height: 72vh; o  verflow-y: auto;">
-                        <!-- Ajustes de WhatsApp -->
+                    <div class="modal-body p-4" style="max-height: 74vh; overflow-y: auto;">
+                        <!-- PESTAÑA 1: Mi Negocio & WhatsApp -->
                         <div id="cfg-pane-general">
-                            <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
-                                Parámetros Técnicos WhatsApp Cloud API y Coexistencia
-                            </h6>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h6 class="font-weight-bold text-dark mb-1">
+                                        <i class="fab fa-whatsapp text-success mr-1"></i> Perfil Comercial y Asistente WhatsApp
+                                    </h6>
+                                    <p class="small text-muted mb-0">Define los datos principales de tu negocio y el comportamiento del bot al intervenir un asesor.</p>
+                                </div>
+                                <span class="badge badge-light border text-muted px-2 py-1 font-mono small">
+                                    Instancia #{{ $instancia->id }}
+                                </span>
+                            </div>
+
                             <form id="formAjustesInstancia" action="{{ route('instancias.update', $instancia->id) }}" method="POST">
                                 @csrf
                                 @method('PUT')
-                                <div class="row">
-                                    <div class="col-md-5 form-group">
-                                        <label class="saas-label">Nombre de la Empresa</label>
-                                        <input type="text" name="nombre_empresa" class="saas-input" value="{{ $instancia->nombre_empresa }}" required>
-                                    </div>
-                                    <div class="col-md-4 form-group">
-                                        <label class="saas-label">Número de Teléfono</label>
-                                        <input type="text" name="telefono" class="saas-input" value="{{ $instancia->telefono }}">
-                                    </div>
-                                    <div class="col-md-3 form-group">
-                                        <label class="saas-label">Pausa Bot (Horas)</label>
-                                        <input type="number" name="bot_pause_hours" min="1" max="720" class="saas-input font-mono" value="{{ $instancia->bot_pause_hours ?? 12 }}" required>
+
+                                <div class="card border mb-3" style="border-radius: 12px; background: #ffffff;">
+                                    <div class="card-body p-3">
+                                        <div class="row">
+                                            <div class="col-md-5 form-group mb-3 mb-md-0">
+                                                <label class="saas-label font-weight-bold small text-dark mb-1">Nombre Comercial de la Empresa *</label>
+                                                <input type="text" name="nombre_empresa" class="saas-input" value="{{ $instancia->nombre_empresa }}" required placeholder="Ej: Mi Empresa Guatemala">
+                                                <span class="small text-muted" style="font-size: 0.74rem;">Visible en presupuestos, reportes y cotizaciones PDF.</span>
+                                            </div>
+                                            <div class="col-md-4 form-group mb-3 mb-md-0">
+                                                <label class="saas-label font-weight-bold small text-dark mb-1">Teléfono WhatsApp Oficial</label>
+                                                <input type="text" name="telefono" class="saas-input font-mono" value="{{ $instancia->telefono }}" placeholder="+502 xxxx xxxx">
+                                                <span class="small text-muted" style="font-size: 0.74rem;">Línea de WhatsApp conectada para tus clientes.</span>
+                                            </div>
+                                            <div class="col-md-3 form-group mb-0">
+                                                <label class="saas-label font-weight-bold small text-dark mb-1">Pausa al Intervenir Asesor</label>
+                                                <div class="input-group">
+                                                    <input type="number" name="bot_pause_hours" min="1" max="720" class="saas-input font-mono" value="{{ $instancia->bot_pause_hours ?? 12 }}" required>
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text small bg-white text-muted border-left-0">horas</span>
+                                                    </div>
+                                                </div>
+                                                <span class="small text-muted" style="font-size: 0.74rem;">El bot descansará este tiempo al responder un asesor humano.</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="row">
-                                    <div class="col-md-6 form-group">
-                                        <label class="saas-label">Phone Number ID (Meta)</label>
-                                        <input type="text" name="phone_number_id" class="saas-input font-mono" value="{{ $instancia->phone_number_id }}" required>
-                                    </div>
-                                    <div class="col-md-6 form-group">
-                                        <label class="saas-label">WABA ID</label>
-                                        <input type="text" name="waba_id" class="saas-input font-mono" value="{{ $instancia->waba_id }}">
+                                <!-- Credenciales de Meta Cloud API (Agrupadas de forma ordenada) -->
+                                <div class="card border mb-3" style="border-radius: 12px; background: #f8fafc;">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-2" data-toggle="collapse" data-target="#collapseMetaCredentials" style="cursor: pointer;">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <i class="fas fa-shield-alt text-primary"></i>
+                                                <span class="font-weight-bold text-dark small">Credenciales de Conexión Meta WhatsApp Cloud API</span>
+                                                <span class="badge badge-success small py-0 px-2" style="font-size: 0.7rem;">Conectado</span>
+                                            </div>
+                                            <i class="fas fa-chevron-down text-muted small"></i>
+                                        </div>
+
+                                        <div class="collapse show" id="collapseMetaCredentials">
+                                            <p class="small text-muted mb-3" style="font-size: 0.78rem;">
+                                                Identificadores técnicos asignados por Meta para la sincronización de mensajes entrantes y salientes.
+                                            </p>
+                                            <div class="row">
+                                                <div class="col-md-6 form-group mb-2">
+                                                    <label class="saas-label small text-muted font-weight-bold">Phone Number ID (Meta) *</label>
+                                                    <input type="text" name="phone_number_id" class="saas-input font-mono small" value="{{ $instancia->phone_number_id }}" required>
+                                                </div>
+                                                <div class="col-md-6 form-group mb-2">
+                                                    <label class="saas-label small text-muted font-weight-bold">WABA ID (WhatsApp Business Account)</label>
+                                                    <input type="text" name="waba_id" class="saas-input font-mono small" value="{{ $instancia->waba_id }}">
+                                                </div>
+                                            </div>
+
+                                            <div class="p-2 mt-2 rounded bg-white border d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                                <div class="small text-muted font-mono" style="font-size: 0.75rem;">
+                                                    <span class="text-dark font-weight-bold">Webhook URL para Meta:</span> <code>{{ url('/api/webhook') }}</code>
+                                                </div>
+                                                <button type="button" class="btn btn-xs btn-outline-secondary" onclick="navigator.clipboard.writeText('{{ url('/api/webhook') }}'); alert('¡URL de webhook copiada al portapapeles!');">
+                                                    <i class="fas fa-copy mr-1"></i> Copiar URL
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="d-flex justify-content-end">
-                                    <button type="submit" id="btnGuardarAjustes" class="btn-saas btn-saas-primary btn-sm" disabled>
-                                        <i class="fas fa-save mr-1"></i> Guardar Credenciales
+                                <div class="d-flex justify-content-end mt-3">
+                                    <button type="submit" id="btnGuardarAjustes" class="btn-saas btn-saas-primary btn-sm px-4">
+                                        <i class="fas fa-save mr-1"></i> Guardar Ajustes del Negocio
                                     </button>
                                 </div>
                             </form>
-                        </div>
 
-                        <!-- Horarios de atención -->
-                        <div id="cfg-pane-horarios" class="d-none">
-                            <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
-                                Horarios de Atención Comercial y Respuesta Fuera de Horario
-                            </h6>
-                            <form id="formConfigHorario">
-                                <div class="p-3 mb-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <label class="small font-weight-bold text-dark mb-0 d-flex align-items-center gap-2" style="cursor: pointer;">
-                                            <input type="checkbox" id="cfgHorarioActivo" {{ !empty($horarioAtencion['activo']) ? 'checked' : '' }}>
-                                            <span>Activar Respuesta Automática Fuera de Horario</span>
-                                        </label>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="small text-muted">Zona Horaria:</span>
-                                            <select id="cfgHorarioTimezone" class="crm-topbar-select font-mono" style="width: auto; min-width: 220px;">
-                                                <option value="America/Guatemala" selected>America/Guatemala (GMT-6)</option>
-                                            </select>
+                            <!-- Opciones Técnicas de Integración (Colapsadas para evitar ruido comercial) -->
+                            <div class="mt-4 pt-3 border-top">
+                                <div class="d-flex justify-content-between align-items-center py-2" data-toggle="collapse" data-target="#collapseAvanzadoDev" style="cursor: pointer;">
+                                    <span class="small font-weight-bold text-muted">
+                                        <i class="fas fa-code mr-1 text-secondary"></i> Herramientas de Integración API REST & Webhooks (Opcional)
+                                    </span>
+                                    <i class="fas fa-chevron-down text-muted small"></i>
+                                </div>
+
+                                <div class="collapse mt-3" id="collapseAvanzadoDev">
+                                    <!-- Token API REST -->
+                                    <div class="p-3 mb-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                                        <h6 class="font-weight-bold text-dark small mb-1"><i class="fas fa-key text-warning mr-1"></i> Token API REST de la Empresa</h6>
+                                        <p class="small text-muted mb-2" style="font-size: 0.75rem;">Úsalo si conectas tu ERP externo o formularios web con la API REST.</p>
+                                        <div class="input-group mb-2">
+                                            <input type="text" id="cfgApiTokenInput" class="saas-input font-mono small" readonly value="{{ $apiToken ?: 'No generado aún' }}">
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-primary btn-sm" id="btnCopyApiToken"><i class="fas fa-copy"></i> Copiar</button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" id="btnRegenerateApiToken"><i class="fas fa-sync"></i> Regenerar</button>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <table class="table table-sm table-borderless mb-0">
-                                        <thead>
-                                            <tr class="small text-muted">
-                                                <th style="width: 150px;">Día</th>
-                                                <th style="width: 100px;">Laboral</th>
-                                                <th>Hora Inicio</th>
-                                                <th>Hora Fin</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
+                                    <!-- Formulario Webhook Saliente -->
+                                    <form id="formConfigWebhook" class="p-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                                        <label class="small font-weight-bold text-dark mb-2 d-flex align-items-center gap-2" style="cursor: pointer;">
+                                            <input type="checkbox" id="cfgWebhookActivo" {{ !empty($webhookSaliente['activo']) ? 'checked' : '' }}>
+                                            <span>Activar Notificaciones Webhook Salientes</span>
+                                        </label>
+                                        <div class="row">
+                                            <div class="col-md-7 form-group mb-2">
+                                                <label class="saas-label small">URL Endpoint Receptor HTTP POST</label>
+                                                <input type="url" id="cfgWebhookUrl" class="saas-input font-mono small" placeholder="https://api.tuempresa.com/webhook" value="{{ $webhookSaliente['url'] ?? '' }}">
+                                            </div>
+                                            <div class="col-md-5 form-group mb-2">
+                                                <label class="saas-label small">Firma Secreta HMAC</label>
+                                                <input type="text" id="cfgWebhookSecret" class="saas-input font-mono small" placeholder="whsec_xxxxxx" value="{{ $webhookSaliente['secret_key'] ?? '' }}">
+                                            </div>
+                                        </div>
+                                        @php
+                                            $evs = $webhookSaliente['eventos'] ?? ['lead.creado', 'lead.etapa_cambiada'];
+                                        @endphp
+                                        <div class="d-flex flex-wrap gap-3 small text-secondary mb-2">
+                                            <label style="cursor: pointer;" class="d-flex align-items-center gap-1">
+                                                <input type="checkbox" class="cfg-webhook-event" value="lead.creado" {{ in_array('lead.creado', $evs) ? 'checked' : '' }}>
+                                                <span>lead.creado</span>
+                                            </label>
+                                            <label style="cursor: pointer;" class="d-flex align-items-center gap-1">
+                                                <input type="checkbox" class="cfg-webhook-event" value="lead.etapa_cambiada" {{ in_array('lead.etapa_cambiada', $evs) ? 'checked' : '' }}>
+                                                <span>lead.etapa_cambiada</span>
+                                            </label>
+                                            <label style="cursor: pointer;" class="d-flex align-items-center gap-1">
+                                                <input type="checkbox" class="cfg-webhook-event" value="lead.asignado" {{ in_array('lead.asignado', $evs) ? 'checked' : '' }}>
+                                                <span>lead.asignado</span>
+                                            </label>
+                                        </div>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="submit" class="btn-saas btn-saas-secondary btn-sm">
+                                                <i class="fas fa-save mr-1"></i> Guardar Webhook
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PESTAÑA 2: Horarios de Atención (Guatemala) -->
+                        <div id="cfg-pane-horarios" class="d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h6 class="font-weight-bold text-dark mb-1">
+                                        <i class="fas fa-clock text-warning mr-1"></i> Horarios Comerciales y Respuesta Fuera de Oficina
+                                    </h6>
+                                    <p class="small text-muted mb-0">Configura la jornada de atención en Guatemala para enviar mensajes automáticos a clientes fuera de hora.</p>
+                                </div>
+                                <span class="badge badge-light border text-dark font-weight-bold px-2 py-1 font-mono small">
+                                    🇬🇹 America/Guatemala (GMT-6)
+                                </span>
+                            </div>
+
+                            <form id="formConfigHorario">
+                                <input type="hidden" id="cfgHorarioTimezone" value="America/Guatemala">
+
+                                <div class="p-3 mb-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+                                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                        <label class="font-weight-bold text-dark mb-0 d-flex align-items-center gap-2" style="cursor: pointer;">
+                                            <input type="checkbox" id="cfgHorarioActivo" {{ !empty($horarioAtencion['activo']) ? 'checked' : '' }} style="width: 17px; height: 17px;">
+                                            <span>Activar Respuesta Automática Fuera de Horario</span>
+                                        </label>
+                                        <button type="button" id="btnCopiarHorarioSemana" class="btn btn-xs btn-outline-primary">
+                                            <i class="fas fa-copy mr-1"></i> Copiar Lunes a toda la semana (L-V)
+                                        </button>
+                                    </div>
+
+                                    @php
+                                        $diasSemana = [
+                                            'lunes'     => 'Lunes',
+                                            'martes'    => 'Martes',
+                                            'miercoles' => 'Miércoles',
+                                            'jueves'    => 'Jueves',
+                                            'viernes'   => 'Viernes',
+                                            'sabado'    => 'Sábado',
+                                            'domingo'   => 'Domingo',
+                                        ];
+                                    @endphp
+
+                                    <div class="d-flex flex-column gap-2">
+                                        @foreach($diasSemana as $dKey => $dNom)
                                             @php
-                                                $diasSemana = [
-                                                    'lunes'     => 'Lunes',
-                                                    'martes'    => 'Martes',
-                                                    'miercoles' => 'Miércoles',
-                                                    'jueves'    => 'Jueves',
-                                                    'viernes'   => 'Viernes',
-                                                    'sabado'    => 'Sábado',
-                                                    'domingo'   => 'Domingo',
+                                                $dConf = $horarioAtencion['dias'][$dKey] ?? [
+                                                    'activo' => ($dKey !== 'domingo'),
+                                                    'desde'  => ($dKey === 'sabado' ? '08:30' : '08:00'),
+                                                    'hasta'  => ($dKey === 'sabado' ? '13:00' : '18:00')
                                                 ];
                                             @endphp
-                                            @foreach($diasSemana as $dKey => $dNom)
-                                                @php
-                                                    $dConf = $horarioAtencion['dias'][$dKey] ?? ['activo' => ($dKey !== 'sabado' && $dKey !== 'domingo'), 'desde' => '09:00', 'hasta' => '18:00'];
-                                                @endphp
-                                                <tr>
-                                                    <td class="font-weight-600 align-middle">{{ $dNom }}</td>
-                                                    <td class="align-middle">
+                                            <div class="d-flex align-items-center justify-content-between p-2 rounded bg-white border">
+                                                <div class="d-flex align-items-center gap-3" style="min-width: 140px;">
+                                                    <label class="mb-0 d-flex align-items-center gap-2" style="cursor: pointer;">
                                                         <input type="checkbox" class="cfg-day-active" data-day="{{ $dKey }}" {{ !empty($dConf['activo']) ? 'checked' : '' }}>
-                                                    </td>
-                                                    <td>
-                                                        <input type="time" class="saas-input py-0 px-2 cfg-day-start font-mono" data-day="{{ $dKey }}" style="width: 120px; height: 28px; font-size: 0.8rem;" value="{{ $dConf['desde'] ?? '09:00' }}">
-                                                    </td>
-                                                    <td>
-                                                        <input type="time" class="saas-input py-0 px-2 cfg-day-end font-mono" data-day="{{ $dKey }}" style="width: 120px; height: 28px; font-size: 0.8rem;" value="{{ $dConf['hasta'] ?? '18:00' }}">
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                                        <span class="font-weight-bold small text-dark">{{ $dNom }}</span>
+                                                    </label>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="small text-muted">Apertura:</span>
+                                                    <input type="time" class="saas-input py-0 px-2 cfg-day-start font-mono" data-day="{{ $dKey }}" style="width: 110px; height: 30px; font-size: 0.8rem;" value="{{ $dConf['desde'] ?? '08:00' }}">
+                                                    <span class="small text-muted mx-1">Cierre:</span>
+                                                    <input type="time" class="saas-input py-0 px-2 cfg-day-end font-mono" data-day="{{ $dKey }}" style="width: 110px; height: 30px; font-size: 0.8rem;" value="{{ $dConf['hasta'] ?? '18:00' }}">
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
 
                                 <div class="form-group mb-3">
-                                    <label class="saas-label small">Mensaje Automático Fuera de Horario</label>
-                                    <textarea id="cfgHorarioMensaje" class="saas-input p-2" rows="3" placeholder="Mensaje que recibirá el cliente cuando escriba en días inhábiles o fuera de hora...">{{ $horarioAtencion['mensaje_fuera_horario'] ?? '¡Hola! Gracias por comunicarte. En este momento nos encontramos fuera de nuestro horario de atención comercial. Te responderemos a primera hora.' }}</textarea>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label class="saas-label font-weight-bold small text-dark mb-0">Mensaje Automático de Ausencia por WhatsApp</label>
+                                        <span class="small text-muted" style="font-size: 0.74rem;">Se envía cuando el cliente escribe fuera de tu jornada laboral</span>
+                                    </div>
+                                    <textarea id="cfgHorarioMensaje" class="saas-input p-3" rows="3" placeholder="Mensaje cordial que recibirá el cliente...">{{ $horarioAtencion['mensaje_fuera_horario'] ?? '¡Hola! 🇬🇹 Gracias por comunicarte con nosotros. En este momento nos encontramos fuera de horario de atención comercial. Te responderemos el siguiente día hábil a primera hora.' }}</textarea>
                                 </div>
 
                                 <div class="d-flex justify-content-end">
-                                    <button type="submit" class="btn-saas btn-saas-primary btn-sm px-3">
+                                    <button type="submit" class="btn-saas btn-saas-primary btn-sm px-4">
                                         <i class="fas fa-save mr-1"></i> Guardar Horario Comercial
                                     </button>
                                 </div>
                             </form>
                         </div>
 
-                        <!-- Datos fiscales -->
-                        <div id="cfg-pane-fiscal" class="d-none">
-                            <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
-                                Datos Fiscales, Moneda e Impuestos para Cotizaciones Oficiales PDF
-                            </h6>
-                            <form id="formConfigFiscal">
-                                <div class="row">
-                                    <div class="col-md-7 form-group mb-2">
-                                        <label class="saas-label small">Razón Social o Nombre Legal *</label>
-                                        <input type="text" id="cfgFiscalRazon" class="saas-input" value="{{ $datosFiscales['razon_social'] ?? $instancia->nombre_empresa }}" required>
-                                    </div>
-                                    <div class="col-md-5 form-group mb-2">
-                                        <label class="saas-label small">NIT / RFC / CIF Fiscal</label>
-                                        <input type="text" id="cfgFiscalNit" class="saas-input font-mono" value="{{ $datosFiscales['nit_rfc'] ?? '' }}" placeholder="Ej: ABC123456XYZ">
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-8 form-group mb-2">
-                                        <label class="saas-label small">Dirección Fiscal Completa</label>
-                                        <input type="text" id="cfgFiscalDireccion" class="saas-input" value="{{ $datosFiscales['direccion'] ?? '' }}" placeholder="Av. Principal #123, Ciudad, País">
-                                    </div>
-                                    <div class="col-md-4 form-group mb-2">
-                                        <label class="saas-label small">Correo de Contacto / Facturación</label>
-                                        <input type="email" id="cfgFiscalEmail" class="saas-input" value="{{ $datosFiscales['email_contacto'] ?? '' }}" placeholder="ventas@tuempresa.com">
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4 form-group mb-2">
-                                        <label class="saas-label small">Moneda Principal</label>
-                                        <select id="cfgFiscalMoneda" class="crm-topbar-select font-mono w-100">
-                                            @foreach(['GTQ' => 'GTQ (Quetzales)', 'USD' => 'USD (Dólares)'] as $currCode => $currLabel)
-                                                <option value="{{ $currCode }}" {{ ($datosFiscales['moneda'] ?? 'GTQ') === $currCode ? 'selected' : '' }}>{{ $currLabel }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <div class="col-md-4 form-group mb-2">
-                                        <label class="saas-label small">Porcentaje de Impuesto (% IVA / TAX)</label>
-                                        <input type="number" step="0.01" min="0" max="100" id="cfgFiscalImpuesto" class="saas-input font-mono" value="{{ $datosFiscales['porcentaje_impuesto'] ?? 16 }}">
-                                    </div>
-                                    <div class="col-md-4 form-group mb-2">
-                                        <label class="saas-label small">Validez por Defecto (Días)</label>
-                                        <input type="number" min="1" max="365" id="cfgFiscalValidez" class="saas-input font-mono" value="{{ $datosFiscales['validez_dias_default'] ?? 15 }}">
-                                    </div>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label class="saas-label small">Términos, Condiciones y Políticas de Cotización</label>
-                                    <textarea id="cfgFiscalTerminos" class="saas-input p-2" rows="3">{{ $datosFiscales['terminos_condiciones'] ?? 'Esta cotización tiene validez de 15 días calendario. Sujeta a términos y condiciones generales del servicio.' }}</textarea>
-                                </div>
-                                <div class="d-flex justify-content-end">
-                                    <button type="submit" class="btn-saas btn-saas-primary btn-sm px-3">
-                                        <i class="fas fa-save mr-1"></i> Guardar Datos Fiscales
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Webhooks y API -->
-                        <div id="cfg-pane-webhooks" class="d-none">
-                            <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
-                                Integración API REST & Disparadores Webhook Salientes
-                            </h6>
-
-                            <!-- Token de API -->
-                            <div class="p-3 mb-4" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-                                <h6 class="font-weight-bold text-dark mb-1"><i class="fas fa-key text-warning mr-1"></i> Token API REST de la Empresa</h6>
-                                <p class="small text-muted mb-2">Usa este token para conectar Zapier, Make, tu ERP o sitios web con la API REST v1 de tu CRM.</p>
-                                <div class="input-group mb-2">
-                                    <input type="text" id="cfgApiTokenInput" class="saas-input font-mono small" readonly value="{{ $apiToken ?: 'No generado aún' }}">
-                                    <div class="input-group-append">
-                                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnCopyApiToken"><i class="fas fa-copy"></i> Copiar</button>
-                                        <button type="button" class="btn btn-outline-danger btn-sm" id="btnRegenerateApiToken"><i class="fas fa-sync"></i> Regenerar</button>
-                                    </div>
-                                </div>
-                                <div class="small text-muted font-mono" style="font-size:0.75rem;">
-                                    Endpoint: <code>POST /api/v1/leads</code> &bull; Header: <code>Authorization: Bearer &lt;token&gt;</code>
+                        <!-- PESTAÑA 3: Equipo de Ventas & Asesores -->
+                        <div id="cfg-pane-usuarios" class="d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h6 class="font-weight-bold text-dark mb-1">
+                                        <i class="fas fa-users text-primary mr-1"></i> Equipo de Ventas y Control de Accesos
+                                    </h6>
+                                    <p class="small text-muted mb-0">Administra los asesores que atienden chats y gestionan oportunidades en <strong>{{ $instancia->nombre_empresa }}</strong>.</p>
                                 </div>
                             </div>
 
-                            <!-- Configuración del webhook -->
-                            <form id="formConfigWebhook">
-                                <div class="p-3 mb-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <label class="small font-weight-bold text-dark mb-0 d-flex align-items-center gap-2" style="cursor: pointer;">
-                                            <input type="checkbox" id="cfgWebhookActivo" {{ !empty($webhookSaliente['activo']) ? 'checked' : '' }}>
-                                            <span>Activar Notificaciones Webhook Salientes (Eventos en Tiempo Real)</span>
-                                        </label>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-7 form-group mb-2">
-                                            <label class="saas-label small">URL de Destino (Endpoint Receptor HTTP POST)</label>
-                                            <input type="url" id="cfgWebhookUrl" class="saas-input font-mono" placeholder="https://api.tuempresa.com/crm-webhook" value="{{ $webhookSaliente['url'] ?? '' }}">
-                                        </div>
-                                        <div class="col-md-5 form-group mb-2">
-                                            <label class="saas-label small">Clave Secreta Firma (HMAC-SHA256)</label>
-                                            <input type="text" id="cfgWebhookSecret" class="saas-input font-mono" placeholder="whsec_xxxxxx" value="{{ $webhookSaliente['secret_key'] ?? '' }}">
-                                        </div>
-                                    </div>
-
-                                    <label class="saas-label small mt-2 mb-1">Eventos a Notificar:</label>
-                                    @php
-                                        $evs = $webhookSaliente['eventos'] ?? ['lead.creado', 'lead.etapa_cambiada'];
-                                    @endphp
-                                    <div class="d-flex flex-wrap gap-3 small text-secondary">
-                                        <label style="cursor: pointer;" class="d-flex align-items-center gap-1">
-                                            <input type="checkbox" class="cfg-webhook-event" value="lead.creado" {{ in_array('lead.creado', $evs) ? 'checked' : '' }}>
-                                            <span>lead.creado</span>
-                                        </label>
-                                        <label style="cursor: pointer;" class="d-flex align-items-center gap-1">
-                                            <input type="checkbox" class="cfg-webhook-event" value="lead.etapa_cambiada" {{ in_array('lead.etapa_cambiada', $evs) ? 'checked' : '' }}>
-                                            <span>lead.etapa_cambiada</span>
-                                        </label>
-                                        <label style="cursor: pointer;" class="d-flex align-items-center gap-1">
-                                            <input type="checkbox" class="cfg-webhook-event" value="lead.asignado" {{ in_array('lead.asignado', $evs) ? 'checked' : '' }}>
-                                            <span>lead.asignado</span>
-                                        </label>
-                                        <label style="cursor: pointer;" class="d-flex align-items-center gap-1">
-                                            <input type="checkbox" class="cfg-webhook-event" value="cotizacion.enviada" {{ in_array('cotizacion.enviada', $evs) ? 'checked' : '' }}>
-                                            <span>cotizacion.enviada</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex justify-content-end">
-                                    <button type="submit" class="btn-saas btn-saas-primary btn-sm px-3">
-                                        <i class="fas fa-save mr-1"></i> Guardar Webhook Saliente
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Usuarios del equipo -->
-                        <div id="cfg-pane-usuarios" class="d-none">
-                            <h6 class="font-weight-bold text-uppercase small text-secondary mb-2" style="letter-spacing: 0.05em;">
-                                Cuentas de Acceso de Empresa y Roles de Asesores
-                            </h6>
-                            <p class="small text-muted mb-3">
-                                Gestiona los accesos del equipo para <strong>{{ $instancia->nombre_empresa }}</strong>.
-                            </p>
-
                             @if($usuariosEmpresa && $usuariosEmpresa->count() > 0)
-                                <div class="table-responsive mb-3">
-                                    <table class="table table-sm table-bordered mb-0">
+                                <div class="table-responsive mb-4 border rounded" style="background:#ffffff;">
+                                    <table class="table table-sm table-hover mb-0">
                                         <thead class="thead-light">
                                             <tr>
-                                                <th>Nombre</th>
-                                                <th>Correo de Acceso</th>
-                                                <th>Rol Interno</th>
-                                                <th>Visibilidad</th>
-                                                <th class="text-right">Acción</th>
+                                                <th class="border-0">Asesor / Usuario</th>
+                                                <th class="border-0">Correo de Acceso</th>
+                                                <th class="border-0">Rol</th>
+                                                <th class="border-0">Visibilidad de Leads</th>
+                                                <th class="border-0 text-right">Acción</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach($usuariosEmpresa as $uEmp)
                                                 <tr>
-                                                    <td class="font-weight-600 align-middle">{{ $uEmp->name }}</td>
-                                                    <td class="font-mono small align-middle">{{ $uEmp->email }}</td>
+                                                    <td class="font-weight-600 align-middle">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <div class="crm-avatar" style="width: 28px; height: 28px; background: #e0e7ff; color: #4338ca; font-size: 0.75rem;">
+                                                                {{ strtoupper(substr($uEmp->name, 0, 2)) }}
+                                                            </div>
+                                                            <span>{{ $uEmp->name }}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="font-mono small align-middle text-muted">{{ $uEmp->email }}</td>
                                                     <td class="align-middle">
-                                                        <span class="badge {{ ($uEmp->sub_rol ?? 'vendedor') === 'supervisor' ? 'badge-primary' : 'badge-secondary' }}">
-                                                            {{ ucfirst($uEmp->sub_rol ?? 'vendedor') }}
+                                                        <span class="badge {{ ($uEmp->sub_rol ?? 'vendedor') === 'supervisor' ? 'badge-primary' : 'badge-light border' }}">
+                                                            {{ ($uEmp->sub_rol ?? 'vendedor') === 'supervisor' ? 'Supervisor' : 'Vendedor' }}
                                                         </span>
                                                     </td>
                                                     <td class="small align-middle">
-                                                        {{ $uEmp->solo_asignados ? 'Solo leads asignados' : 'Todos los leads' }}
+                                                        <span class="text-muted">
+                                                            <i class="fas {{ $uEmp->solo_asignados ? 'fa-lock text-warning' : 'fa-globe text-secondary' }} mr-1"></i>
+                                                            {{ $uEmp->solo_asignados ? 'Solo leads asignados' : 'Todos los leads' }}
+                                                        </span>
                                                     </td>
                                                     <td class="text-right align-middle">
-                                                        <form action="{{ route('instancias.usuarios.destroy', [$instancia->id, $uEmp->id]) }}" method="POST" class="d-inline">
+                                                        <form action="{{ route('instancias.usuarios.destroy', [$instancia->id, $uEmp->id]) }}" method="POST" class="d-inline" onsubmit="return confirm('¿Seguro que deseas revocar el acceso a este asesor?');">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-xs btn-outline-danger"><i class="fas fa-user-times mr-1"></i> Revocar</button>
+                                                            <button type="submit" class="btn btn-xs btn-outline-danger">
+                                                                <i class="fas fa-user-times mr-1"></i> Revocar
+                                                            </button>
                                                         </form>
                                                     </td>
                                                 </tr>
@@ -1929,35 +1937,41 @@
                                 </div>
                             @endif
 
-                            <form action="{{ route('instancias.usuarios.store', $instancia->id) }}" method="POST" class="p-3" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
+                            <form action="{{ route('instancias.usuarios.store', $instancia->id) }}" method="POST" class="p-3" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;">
                                 @csrf
-                                <div class="small font-weight-bold text-dark mb-2"><i class="fas fa-user-plus text-primary mr-1"></i> Crear nueva cuenta de empresa</div>
+                                <div class="font-weight-bold text-dark small mb-3">
+                                    <i class="fas fa-user-plus text-primary mr-1"></i> Habilitar Acceso a Nuevo Asesor de Ventas
+                                </div>
                                 <div class="row">
                                     <div class="col-md-4 form-group mb-2">
-                                        <input type="text" name="name" class="saas-input" placeholder="Nombre del usuario" required>
+                                        <label class="saas-label small text-muted">Nombre Completo *</label>
+                                        <input type="text" name="name" class="saas-input" placeholder="Ej: Carlos Méndez" required>
                                     </div>
                                     <div class="col-md-4 form-group mb-2">
-                                        <input type="email" name="email" class="saas-input" placeholder="Correo electrónico" required>
+                                        <label class="saas-label small text-muted">Correo Electrónico (Login) *</label>
+                                        <input type="email" name="email" class="saas-input" placeholder="carlos@tuempresa.gt" required>
                                     </div>
                                     <div class="col-md-4 form-group mb-2">
-                                        <input type="password" name="password" class="saas-input" placeholder="Contraseña (mín. 8)" minlength="8" required>
+                                        <label class="saas-label small text-muted">Contraseña Provisional (mín. 8) *</label>
+                                        <input type="password" name="password" class="saas-input" placeholder="••••••••" minlength="8" required>
                                     </div>
                                 </div>
-                                <div class="row align-items-center mt-1">
+                                <div class="row align-items-center mt-2">
                                     <div class="col-md-4 form-group mb-2 mb-md-0">
-                                        <select name="sub_rol" class="saas-input py-1 px-2">
-                                            <option value="vendedor">Rol: Vendedor / Asesor</option>
-                                            <option value="supervisor">Rol: Supervisor de Equipo</option>
+                                        <label class="saas-label small text-muted">Rol en la Empresa</label>
+                                        <select name="sub_rol" class="crm-topbar-select w-100">
+                                            <option value="vendedor" selected>Vendedor / Asesor Comercial</option>
+                                            <option value="supervisor">Supervisor de Equipo</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-5 form-group mb-2 mb-md-0">
-                                        <label class="small text-secondary mb-0 d-flex align-items-center gap-1" style="cursor: pointer;">
-                                            <input type="checkbox" name="solo_asignados" value="1">
-                                            <span>Restringir a ver solo sus leads asignados</span>
+                                    <div class="col-md-5 form-group mb-2 mb-md-0 pt-md-3">
+                                        <label class="small text-secondary mb-0 d-flex align-items-center gap-2" style="cursor: pointer;">
+                                            <input type="checkbox" name="solo_asignados" value="1" checked style="width: 16px; height: 16px;">
+                                            <span class="font-weight-500">Restringir a ver únicamente sus propios leads asignados</span>
                                         </label>
                                     </div>
-                                    <div class="col-md-3 d-flex justify-content-end">
-                                        <button type="submit" class="btn-saas btn-saas-primary btn-sm">
+                                    <div class="col-md-3 d-flex justify-content-end pt-md-3">
+                                        <button type="submit" class="btn-saas btn-saas-primary btn-sm px-3">
                                             <i class="fas fa-plus-circle mr-1"></i> Habilitar Acceso
                                         </button>
                                     </div>
@@ -1965,35 +1979,91 @@
                             </form>
                         </div>
 
-                        {{-- <!-- Plan y consumo IA -->
-                        <div id="cfg-pane-plan" class="d-none">
-                            <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
-                                Plan Activo y Cuota Mensual de Mensajes IA (Groq LLaMA 3.3)
-                            </h6>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <div class="p-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-                                        <div class="small text-muted">Plan Actual:</div>
-                                        <h4 class="font-weight-bold text-dark mb-1">{{ ucfirst($planInfo['plan']) }}</h4>
-                                        <span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i> Suscripción Activa</span>
-                                    </div>
+                        <!-- PESTAÑA 4: Cotizaciones & Moneda (Guatemala) -->
+                        <div id="cfg-pane-fiscal" class="d-none">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h6 class="font-weight-bold text-dark mb-1">
+                                        <i class="fas fa-file-invoice text-indigo mr-1"></i> Cotizaciones, Moneda e Impuestos (Guatemala)
+                                    </h6>
+                                    <p class="small text-muted mb-0">Parámetros aplicados al generar presupuestos formales para tus prospectos por WhatsApp o PDF.</p>
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <div class="p-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
-                                        <div class="small text-muted">Consumo Mensual:</div>
-                                        <h4 class="font-weight-bold font-mono text-primary mb-1">
-                                            {{ number_format($planInfo['mensajes_ia_consumidos']) }} / {{ number_format($planInfo['limite_mensajes_ia_mes']) }}
-                                        </h4>
-                                        @php
-                                            $porcConsumo = $planInfo['limite_mensajes_ia_mes'] > 0 ? min(100, round(($planInfo['mensajes_ia_consumidos'] / $planInfo['limite_mensajes_ia_mes']) * 100)) : 0;
-                                        @endphp
-                                        <div class="progress" style="height: 6px;">
-                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $porcConsumo }}%;"></div>
+                                <span class="badge badge-light border text-dark font-weight-bold px-2 py-1 small">
+                                    IVA General: 12% SAT
+                                </span>
+                            </div>
+
+                            <form id="formConfigFiscal">
+                                <div class="p-3 mb-3" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px;">
+                                    <div class="row">
+                                        <div class="col-md-4 form-group mb-3">
+                                            <label class="saas-label font-weight-bold small text-dark mb-1">Moneda Principal</label>
+                                            <select id="cfgFiscalMoneda" class="crm-topbar-select font-mono w-100">
+                                                <option value="GTQ" {{ ($datosFiscales['moneda'] ?? 'GTQ') === 'GTQ' ? 'selected' : '' }}>GTQ (Quetzales - Q) 🇬🇹</option>
+                                                <option value="USD" {{ ($datosFiscales['moneda'] ?? '') === 'USD' ? 'selected' : '' }}>USD (Dólares - $)</option>
+                                            </select>
+                                            <span class="small text-muted" style="font-size: 0.74rem;">Moneda base para montos de productos y cotizaciones.</span>
+                                        </div>
+                                        <div class="col-md-4 form-group mb-3">
+                                            <label class="saas-label font-weight-bold small text-dark mb-1">Porcentaje de Impuesto (% IVA SAT)</label>
+                                            <div class="input-group">
+                                                <input type="number" step="0.01" min="0" max="100" id="cfgFiscalImpuesto" class="saas-input font-mono" value="{{ $datosFiscales['porcentaje_impuesto'] ?? 12 }}">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text small bg-white text-muted border-left-0">%</span>
+                                                </div>
+                                            </div>
+                                            <span class="small text-muted" style="font-size: 0.74rem;">Tasa general de IVA en Guatemala (12.00%).</span>
+                                        </div>
+                                        <div class="col-md-4 form-group mb-3">
+                                            <label class="saas-label font-weight-bold small text-dark mb-1">Validez por Defecto</label>
+                                            <div class="input-group">
+                                                <input type="number" min="1" max="365" id="cfgFiscalValidez" class="saas-input font-mono" value="{{ $datosFiscales['validez_dias_default'] ?? 15 }}">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text small bg-white text-muted border-left-0">días</span>
+                                                </div>
+                                            </div>
+                                            <span class="small text-muted" style="font-size: 0.74rem;">Vigencia del presupuesto antes de expirar.</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 form-group mb-3">
+                                            <label class="saas-label font-weight-bold small text-dark mb-1">Nombre Comercial o Razón Social en Cotizaciones *</label>
+                                            <input type="text" id="cfgFiscalRazon" class="saas-input" value="{{ $datosFiscales['razon_social'] ?? $instancia->nombre_empresa }}" required placeholder="Ej: Mi Negocio, S.A.">
+                                        </div>
+                                        <div class="col-md-6 form-group mb-3">
+                                            <label class="saas-label font-weight-bold small text-dark mb-1">NIT de la Empresa (SAT Guatemala)</label>
+                                            <input type="text" id="cfgFiscalNit" class="saas-input font-mono" value="{{ $datosFiscales['nit_rfc'] ?? '' }}" placeholder="Ej: 12345678-9 o C/F">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-7 form-group mb-2">
+                                            <label class="saas-label font-weight-bold small text-dark mb-1">Dirección Comercial o Sucursal (Opcional)</label>
+                                            <input type="text" id="cfgFiscalDireccion" class="saas-input" value="{{ $datosFiscales['direccion'] ?? '' }}" placeholder="Ej: Ciudad de Guatemala">
+                                        </div>
+                                        <div class="col-md-5 form-group mb-2">
+                                            <label class="saas-label font-weight-bold small text-dark mb-1">Correo para Cotizaciones (Opcional)</label>
+                                            <input type="email" id="cfgFiscalEmail" class="saas-input" value="{{ $datosFiscales['email_contacto'] ?? '' }}" placeholder="ventas@tuempresa.gt">
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div> --}}
+
+                                <div class="form-group mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label class="saas-label font-weight-bold small text-dark mb-0">Términos, Condiciones y Notas al Pie de Cotización</label>
+                                        <span class="small text-muted" style="font-size: 0.74rem;">Texto visible al final del presupuesto o mensaje de WhatsApp</span>
+                                    </div>
+                                    <textarea id="cfgFiscalTerminos" class="saas-input p-3" rows="3">{{ $datosFiscales['terminos_condiciones'] ?? 'Precios expresados en Quetzales e incluyen el 12% de IVA. Esta cotización tiene validez de 15 días calendario a partir de su emisión.' }}</textarea>
+                                </div>
+
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn-saas btn-saas-primary btn-sm px-4">
+                                        <i class="fas fa-save mr-1"></i> Guardar Configuración de Cotizaciones
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
