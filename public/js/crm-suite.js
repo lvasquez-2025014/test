@@ -111,23 +111,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const card = document.createElement('div');
                 card.className = 'crm-funnel-card';
+                card.setAttribute('title', 'Ver etapa ' + meta.label + ' en el embudo Kanban');
                 card.innerHTML = `
                     <div class="crm-funnel-header">
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="crm-stage-icon-badge" style="background:${escapeHtml(meta.color)}18; color:${escapeHtml(meta.color)}">
-                                <i class="${escapeHtml(meta.icon)}"></i>
-                            </span>
-                            <div>
-                                <span class="font-weight-700 text-dark" style="font-size:0.88rem;">${escapeHtml(meta.label)}</span>
-                                <span class="badge badge-light border ml-2 font-mono" style="font-size:0.75rem;">${stageLeads.length} (${pct}%)</span>
-                            </div>
+                        <div class="crm-stage-badge-group">
+                            <span class="crm-stage-dot" style="background:${escapeHtml(meta.color)}"></span>
+                            <span class="crm-stage-name">${escapeHtml(meta.label)}</span>
+                            <span class="crm-stage-count-pill">${stageLeads.length} ${stageLeads.length === 1 ? 'oportunidad' : 'oportunidades'} (${pct}%)</span>
                         </div>
-                        <span class="font-mono font-weight-700 text-dark" style="font-size:0.95rem;">${formatCurrency(sum)}</span>
+                        <span class="crm-stage-amount">${formatCurrency(sum)}</span>
                     </div>
                     <div class="crm-funnel-track">
-                        <div class="crm-funnel-fill" style="width: ${Math.max(pct, stageLeads.length > 0 ? 8 : 0)}%; background: linear-gradient(90deg, ${escapeHtml(meta.color)}, ${escapeHtml(meta.color)}dd);"></div>
+                        <div class="crm-funnel-fill" style="width: ${Math.max(pct, stageLeads.length > 0 ? 8 : 0)}%; background: ${escapeHtml(meta.color)};"></div>
                     </div>
                 `;
+                card.addEventListener('click', function () {
+                    const pipeNavBtn = document.querySelector('[data-nav="pipeline"]');
+                    if (pipeNavBtn) pipeNavBtn.click();
+                });
                 funnelContainer.appendChild(card);
             });
         }

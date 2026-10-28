@@ -233,124 +233,134 @@
         <div id="floating-feedback" role="status" aria-live="polite" class="floating-feedback"></div>
     </div>
 
-    <!-- Dashboard y métricas -->
+    <!-- =========================================================================
+         1. PANEL: DASHBOARD & ANALÍTICA COMERCIAL
+         ========================================================================= -->
     <div id="pane-dashboard" class="tab-pane-content">
-        <!-- Indicadores principales -->
-        <div class="crm-dashboard-grid" id="dash-section-kpis">
-            <div class="crm-stat-card">
-                <div class="crm-stat-header">
-                    <span class="crm-stat-label">Leads Activos</span>
-                    <div class="crm-stat-icon-badge badge-blue">
-                        <i class="fas fa-users"></i>
+        <!-- 4 Tarjetas Maestras de Rendimiento (Fila Ejecutiva 1x4) -->
+        <div class="crm-dashboard-kpis-grid" id="dash-section-kpis">
+            <!-- 1. Pipeline Activo -->
+            <div class="dash-kpi-card">
+                <div class="dash-kpi-header">
+                    <span class="dash-kpi-label">Pipeline Activo</span>
+                    <div class="dash-kpi-icon icon-indigo">
+                        <i class="fas fa-coins"></i>
                     </div>
                 </div>
-                <div class="crm-stat-value" id="dash-total-leads">0</div>
-            </div>
-
-            <div class="crm-stat-card">
-                <div class="crm-stat-header">
-                    <span class="crm-stat-label">Valor en Pipeline</span>
-                    <div class="crm-stat-icon-badge badge-indigo">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
+                <div class="dash-kpi-val" id="dash-pipeline-value">$0</div>
+                <div class="dash-kpi-sub">
+                    <i class="fas fa-layer-group text-muted"></i>
+                    <span><strong id="dash-total-leads" class="text-dark">0</strong> oportunidades en negociación</span>
                 </div>
-                <div class="crm-stat-value" id="dash-pipeline-value">$0</div>
             </div>
 
-            <div class="crm-stat-card">
-                <div class="crm-stat-header">
-                    <span class="crm-stat-label">Ventas Ganadas</span>
-                    <div class="crm-stat-icon-badge badge-emerald">
+            <!-- 2. Ventas Ganadas -->
+            <div class="dash-kpi-card">
+                <div class="dash-kpi-header">
+                    <span class="dash-kpi-label">Ventas Ganadas</span>
+                    <div class="dash-kpi-icon icon-emerald">
                         <i class="fas fa-trophy"></i>
                     </div>
                 </div>
-                <div class="crm-stat-value text-success" id="dash-won-value">$0</div>
-                <div class="text-muted small font-mono mt-1">Cierre: <strong id="dash-conversion-rate">0%</strong></div>
-            </div>
-
-            <div class="crm-stat-card">
-                <div class="crm-stat-header">
-                    <span class="crm-stat-label">Tareas Pendientes</span>
-                    <div class="crm-stat-icon-badge badge-amber">
-                        <i class="fas fa-clock"></i>
-                    </div>
+                <div class="dash-kpi-val text-success" id="dash-won-value">$0</div>
+                <div class="dash-kpi-sub">
+                    <i class="fas fa-chart-line text-emerald"></i>
+                    <span>Conversión global: <strong id="dash-conversion-rate" class="text-dark">0%</strong></span>
                 </div>
-                <div class="crm-stat-value" id="dash-pending-tasks">0</div>
             </div>
 
-            <div class="crm-stat-card">
-                <div class="crm-stat-header">
-                    <span class="crm-stat-label">Tráfico WhatsApp</span>
-                    <div class="crm-stat-icon-badge badge-teal">
+            <!-- 3. Mensajería WhatsApp -->
+            <div class="dash-kpi-card">
+                <div class="dash-kpi-header">
+                    <span class="dash-kpi-label">Tráfico WhatsApp</span>
+                    <div class="dash-kpi-icon icon-teal">
                         <i class="fab fa-whatsapp"></i>
                     </div>
                 </div>
-                <div class="crm-stat-value">{{ $totalInbound + $totalOutbound }}</div>
-                <div class="text-muted small mt-1 font-mono">{{ $totalInbound }} in · {{ $totalOutbound }} out</div>
+                <div class="dash-kpi-val">{{ $totalInbound + $totalOutbound }}</div>
+                <div class="dash-kpi-sub font-mono">
+                    <i class="fas fa-arrow-down text-success mr-1"></i>{{ $totalInbound }} in
+                    <span class="mx-1 text-muted">·</span>
+                    <i class="fas fa-arrow-up text-primary mr-1"></i>{{ $totalOutbound }} out
+                </div>
             </div>
 
-            <div class="crm-stat-card">
-                <div class="crm-stat-header">
-                    <span class="crm-stat-label">Distribución</span>
-                    <div class="crm-stat-icon-badge badge-purple">
+            <!-- 4. Coexistencia IA vs Humano -->
+            <div class="dash-kpi-card">
+                <div class="dash-kpi-header">
+                    <span class="dash-kpi-label">Atención & Tareas</span>
+                    <div class="dash-kpi-icon icon-purple">
                         <i class="fas fa-robot"></i>
                     </div>
                 </div>
-                <div class="crm-stat-value" style="font-size: 1.4rem;" id="dash-bot-ratio">0 Bot / 0 Humano</div>
+                <div class="dash-kpi-val" style="font-size: 1.55rem;" id="dash-bot-ratio">0 Bot · 0 Asesor</div>
+                <div class="dash-kpi-sub">
+                    <i class="fas fa-clock text-warning"></i>
+                    <span><strong id="dash-pending-tasks" class="text-dark">0</strong> tareas de seguimiento</span>
+                </div>
             </div>
         </div>
 
-        <!-- Fila Principal: Embudo de Ventas + Actividad Reciente -->
+        <!-- Fila Principal: Embudo de Ventas (7 cols) + Actividad en Vivo (5 cols) -->
         <div class="row">
-            <!-- Columna Izquierda: Embudo de Ventas -->
+            <!-- Columna Izquierda: Embudo de Conversión -->
             <div class="col-lg-7 mb-4" id="dash-section-funnel">
-                <div class="saas-card h-100 shadow-sm border">
-                    <div class="saas-card-header d-flex justify-content-between align-items-center">
-                        <h3 class="saas-card-title mb-0">
-                            <i class="fas fa-filter text-primary mr-2"></i>Embudo de Ventas
+                <div class="dash-funnel-card">
+                    <div class="dash-card-header">
+                        <h3 class="dash-card-title">
+                            <i class="fas fa-filter text-primary"></i> Embudo de Conversión Comercial
                         </h3>
-                        <span class="badge badge-light border font-mono px-3 py-2 text-dark font-weight-700" id="dash-funnel-total-badge">$0</span>
+                        <span class="crm-stage-count-pill" id="dash-funnel-total-badge">$0 USD</span>
                     </div>
-                    <div class="saas-card-body" id="crm-dashboard-funnel">
+                    <div class="dash-funnel-body" id="crm-dashboard-funnel">
                         <div class="text-center py-5 text-muted">
-                            <i class="fas fa-circle-notch fa-spin mr-2"></i> Cargando embudo...
+                            <i class="fas fa-circle-notch fa-spin mr-2"></i> Cargando embudo comercial...
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Columna Derecha: Actividad Reciente en Vivo (Mensajes Reales) -->
+            <!-- Columna Derecha: Actividad Reciente en Vivo (Linear Style) -->
             <div class="col-lg-5 mb-4" id="dash-section-activity">
-                <div class="saas-card h-100 shadow-sm border">
-                    <div class="saas-card-header d-flex justify-content-between align-items-center">
-                        <h3 class="saas-card-title mb-0">
-                            <i class="fas fa-comments text-primary mr-2"></i>Actividad Reciente
+                <div class="dash-activity-card">
+                    <div class="dash-card-header">
+                        <h3 class="dash-card-title">
+                            <span class="status-pulse-dot mr-1"></span> Actividad en Vivo
                         </h3>
-                        <span class="badge badge-light border small text-muted font-mono">En vivo</span>
+                        <a href="#chats" class="sidebar-tab-link text-muted small" data-nav="chats" style="font-weight: 600; text-decoration: none;">
+                            Ver bandeja <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
                     </div>
-                    <div class="saas-card-body p-0" style="max-height: 440px; overflow-y: auto;">
+                    <div class="dash-activity-feed">
                         @forelse($mensajesRecientes as $msg)
-                            <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-start gap-2">
-                                <div class="min-w-0" style="flex: 1;">
-                                    <div class="d-flex align-items-center gap-2 mb-1">
-                                        <span class="badge {{ $msg->direction === 'inbound' ? 'badge-success' : 'badge-primary' }} small" style="font-size: 0.68rem;">
-                                            {{ $msg->direction === 'inbound' ? 'Entrante' : 'Saliente' }}
-                                        </span>
-                                        <span class="font-mono small font-weight-600 text-dark">
-                                            +{{ $msg->direction === 'inbound' ? $msg->from : $msg->to }}
+                            @php
+                                $displayPhone = $msg->direction === 'inbound' ? $msg->from : $msg->to;
+                                $initials = substr(preg_replace('/[^0-9]/', '', $displayPhone), -2);
+                            @endphp
+                            <div class="dash-activity-item">
+                                <div class="activity-avatar">
+                                    {{ $initials ?: 'WA' }}
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-header">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="activity-phone">+{{ $displayPhone }}</span>
+                                            <span class="activity-direction-badge {{ $msg->direction === 'inbound' ? 'dir-inbound' : 'dir-outbound' }}">
+                                                {{ $msg->direction === 'inbound' ? 'Entrante' : 'Saliente' }}
+                                            </span>
+                                        </div>
+                                        <span class="activity-time">
+                                            {{ $msg->created_at?->diffForHumans(null, true) }}
                                         </span>
                                     </div>
-                                    <div class="text-secondary small text-truncate" style="max-width: 260px;">
+                                    <div class="activity-snippet" title="{{ $msg->body }}">
                                         {{ $msg->body }}
                                     </div>
                                 </div>
-                                <span class="text-muted flex-shrink-0" style="font-size: 0.72rem;">
-                                    {{ $msg->created_at?->diffForHumans(null, true) }}
-                                </span>
                             </div>
                         @empty
                             <div class="text-center text-muted small py-5">
-                                <i class="fas fa-inbox fa-2x mb-2 text-muted" style="opacity: 0.35;"></i>
+                                <i class="fab fa-whatsapp fa-2x mb-2 text-muted" style="opacity: 0.35;"></i>
                                 <div>Sin mensajes registrados recientemente.</div>
                             </div>
                         @endforelse
