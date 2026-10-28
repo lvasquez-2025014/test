@@ -16,10 +16,8 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
 
-        $this->call([
-            ChatbotSeeder::class,
-            UserSeeder::class
-        ]);
+        // Base de datos limpia sin seeders automáticos.
+        // Los registros se crean directamente por el usuario o desde la plataforma.
         // User::factory(10)->create();
 
         /*

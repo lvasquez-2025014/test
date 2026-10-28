@@ -1,80 +1,110 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>@yield('title', config('app.name', 'Prime T'))</title>
 
-    <!-- Fonts -->
-    <link rel="dns-prefetch" href="//fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <!-- Scripts -->
-    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}?v={{ file_exists(public_path('vendor/fontawesome-free/css/all.min.css')) ? filemtime(public_path('vendor/fontawesome-free/css/all.min.css')) : time() }}">
+
+    <!-- Custom Dashboard Styles -->
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}?v={{ file_exists(public_path('css/dashboard.css')) ? filemtime(public_path('css/dashboard.css')) : time() }}">
+    @yield('styles')
+    @yield('css')
 </head>
 <body>
-    <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
-            <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <!-- Left Side Of Navbar -->
-                    <ul class="navbar-nav me-auto">
-
-                    </ul>
-
-                    <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ms-auto">
-                        <!-- Authentication Links -->
-                        @guest
-                            @if (Route::has('login'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                                </li>
-                            @endif
-
-                            @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                </li>
-                            @endif
-                        @else
-                            <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    {{ Auth::user()->name }}
-                                </a>
-
-                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{{ route('logout') }}"
-                                       onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                        {{ __('Logout') }}
-                                    </a>
-
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                        @csrf
-                                    </form>
-                                </div>
-                            </li>
-                        @endguest
-                    </ul>
+    <!-- Toast Notifications Flotantes (Superior Derecha) -->
+    @if(session('success') || session('error') || session('status'))
+        <div class="toast-floating-container" id="toastFloatingContainer">
+            @if(session('success'))
+                <div class="saas-toast saas-toast-success" role="alert">
+                    <div class="saas-toast-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="saas-toast-message">
+                        {{ session('success') }}
+                    </div>
+                    <button type="button" class="saas-toast-close" onclick="this.closest('.saas-toast').remove()" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
-            </div>
-        </nav>
+            @endif
+            @if(session('error'))
+                <div class="saas-toast saas-toast-danger" role="alert">
+                    <div class="saas-toast-icon">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                    </div>
+                    <div class="saas-toast-message">
+                        {{ session('error') }}
+                    </div>
+                    <button type="button" class="saas-toast-close" onclick="this.closest('.saas-toast').remove()" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            @endif
+            @if(session('status'))
+                <div class="saas-toast saas-toast-success" role="alert">
+                    <div class="saas-toast-icon">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div class="saas-toast-message">
+                        {{ session('status') }}
+                    </div>
+                    <button type="button" class="saas-toast-close" onclick="this.closest('.saas-toast').remove()" aria-label="Cerrar">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            @endif
+        </div>
+    @endif
 
-        <main class="py-4">
-            @yield('content')
-        </main>
+    <div class="app-wrapper">
+        <!-- Sidebar Modular -->
+        @include('components.sidebar')
+
+        <!-- Contenido Central -->
+        <div class="app-main">
+            <main class="main-content">
+                @hasSection('content_header')
+                    <div class="content-header">
+                        @yield('content_header')
+                    </div>
+                @endif
+
+                @yield('content')
+            </main>
+        </div>
     </div>
+
+    <!-- Vendor Scripts -->
+    <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+
+    <!-- Scripts del Dashboard -->
+    <script src="{{ asset('js/dashboard.js') }}"></script>
+    @yield('scripts')
+    @yield('js')
+    @stack('scripts')
+    <!-- Auto-hide Toasts en 3 segundos -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toasts = document.querySelectorAll('.saas-toast');
+            if (toasts.length > 0) {
+                setTimeout(function () {
+                    toasts.forEach(toast => {
+                        toast.classList.add('toast-hiding');
+                        setTimeout(() => toast.remove(), 350);
+                    });
+                }, 3000);
+            }
+        });
+    </script>
 </body>
 </html>

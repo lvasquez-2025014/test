@@ -35,4 +35,26 @@ return [
         ],
     ],
 
+    'whatsapp' => [
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'test_phone'      => env('WHATSAPP_TEST_PHONE'),
+        'access_token'    => env('WHATSAPP_ACCESS_TOKEN'),
+        'verify_token'    => env('WHATSAPP_VERIFY_TOKEN', env('VERIFY_TOKEN')),
+        'app_secret'      => env('WHATSAPP_APP_SECRET', env('META_APP_SECRET')),
+        'api_version'     => env('WHATSAPP_API_VERSION', 'v22.0'),
+    ],
+
+    'meta' => [
+        'app_id'     => env('META_APP_ID'),
+        'app_secret' => env('META_APP_SECRET', env('WHATSAPP_APP_SECRET', '')),
+        'config_id'  => env('META_CONFIG_ID', ''),
+        'waba_id'    => env('META_WABA_ID'),
+    ],
+
+    'groq' => [
+        'api_key'       => env('GROQ_API_KEY', env('TOKEN_OPENAI')),
+        'model'         => env('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+        'whisper_model' => env('GROQ_WHISPER_MODEL', 'whisper-large-v3-turbo'),
+    ],
+
 ];

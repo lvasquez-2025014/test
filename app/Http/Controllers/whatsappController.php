@@ -3,376 +3,630 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChatbotNode;
+use App\Models\Instancia;
+use App\Models\Mensaje;
 use App\Models\Option;
-use App\Models\User;
 use App\Models\UserContext;
+use App\Services\AiService;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class whatsappController extends Controller
 {
+    public function __construct(
+        protected WhatsAppService $whatsAppService,
+        protected AiService $aiService
+    ) {}
+
     public function enviarMensaje(Request $request)
     {
-        // return $request;
-        $numero = $request->input('numero');
-        $mensajeData = $request->input('mensaje');
-
-        if (!$numero || !$mensajeData) {
-            return response()->json(['success' => false, 'error' => 'Faltan datos'], 400);
-        }
-        try {
-            $respuesta = $this->enviarMensajeWhatsapp($numero, $mensajeData);
-
-            return response()->json(['success' => true, 'response' => $respuesta]);
-        } catch (\Exception $e) {
+        $user = $request->user('api') ?? $request->user('web') ?? auth()->user();
+        if (!$user || !$user->isAdmin()) {
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage()
-            ]);
+                'error'   => 'No autorizado para enviar mensajes',
+            ], 403);
         }
-    }
 
-    public function enviarMensajeWhatsapp($numero, $data)
-    {
-        // cloud, evolution
-        $provider = env('WHATSAPP_PROVIDER', 'cloud');
+        $numero = $request->input('numero');
+        $mensajeData = $request->input('mensaje');
+        $instanciaId = $request->input('instancia_id');
 
-        if ($provider === 'evolution') {
-            return $this->enviarEvolution($numero, $data);
+        if (!$numero || !$mensajeData || !is_array($mensajeData) || empty($mensajeData['type'])) {
+            return response()->json(['success' => false, 'error' => 'Payload de mensaje inválido'], 422);
+        }
+
+        if (!preg_match('/^\+?[0-9]{7,15}$/', (string) $numero)) {
+            return response()->json(['success' => false, 'error' => 'Número de teléfono inválido'], 422);
+        }
+
+        $allowedTypes = ['text', 'image', 'location', 'document', 'interactive', 'buttons', 'list'];
+        if (!in_array($mensajeData['type'], $allowedTypes, true)) {
+            return response()->json(['success' => false, 'error' => 'Tipo de mensaje no permitido'], 422);
+        }
+
+        if (!empty($instanciaId)) {
+            $instancia = Instancia::where('id', $instanciaId)->where('is_active', true)->first();
+            if (!$instancia) {
+                return response()->json(['success' => false, 'error' => 'Instancia no encontrada o inactiva'], 404);
+            }
         } else {
-            return $this->enviarCloud($numero, $data);
+            $instancia = Instancia::where('is_active', true)->first();
+        }
+
+        try {
+            $phoneNumberId = $instancia?->phone_number_id;
+            $respuesta = $this->enviarMensajeWhatsapp((string) $numero, $mensajeData, $phoneNumberId);
+
+            return response()->json(['success' => true, 'response' => $respuesta]);
+        } catch (\Throwable $e) {
+            Log::error('Error en enviarMensaje: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error'   => 'Error al procesar el envío del mensaje',
+            ], 500);
         }
     }
 
-    private function enviarCloud($number, $data)
+    public function enviarMensajeWhatsapp($numero, array $data, $phoneNumberId = null): array
     {
-        $url = "https://graph.facebook.com/v22.0/" . env('WHATSAPP_PHONE_NUMBER_ID') . "/messages";
-        $token = env('WHATSAPP_ACCESS_TOKEN');
-
-        $payload = [
-            "messaging_product" => "whatsapp",
-            "recipient_type" => "individual",
-            "to" => $number,
-            "type" => $data['type']
-        ];
-
-        switch ($data['type']) {
-            case 'text':
-                $payload['text'] = ["body" => $data['body']];
-                break;
-            case 'image':
-                $payload['image'] = [
-                    "link" => $data['link'],
-                    "caption" => $data['caption'] ?? ""
-                ];
-                break;
-            case 'location':
-                $payload['location'] = [
-                    "latitude" => $data['latitude'],
-                    "longitude" => $data['longitude'],
-                    "name" => $data['name'],
-                    "address" => $data['address']
-                ];
-                break;
-            case 'document':
-                $payload['document'] = [
-                    "link" => $data['link'],
-                    "caption" => $data['caption'],
-                    "filename" => $data['filename']
-                ];
-                break;
-            case 'buttons':
-                $payload['type']='interactive';
-                $payload["interactive"] = [
-                    "type" => 'button',
-                    "body" => ["text" => $data['body']],
-                    "action" => ["buttons" => $data['buttons']]
-                ];
-                break;
-        }
-
-        return  Http::withToken($token)->withHeaders([
-            'Content-Type' => 'application/json'
-        ])->post($url, $payload)->json();
+        return $this->whatsAppService->enviarCloud((string) $numero, $data, $phoneNumberId);
     }
 
-    private function enviarEvolution($number, $data)
+    public function verificarWebhook(Request $request)
     {
+        $verifyToken = config('services.whatsapp.verify_token');
 
-        $urlbase = env('EVOLUTION_API_URL');
-        $instance = env('EVOLUTION_INSTANCE');
-        $apikey = env('EVOLUTION_API_KEY');
-
-        $url = "";
-
-        $payload = [
-            "number" => $number,
-        ];
-
-        switch ($data['type']) {
-            case 'text':
-                $url = "{$urlbase}/message/sendText/{$instance}";
-                $payload['text'] = $data['body'];
-                break;
-            case 'image':
-                $url = "{$urlbase}/message/sendMedia/{$instance}";
-
-                $payload['mediatype'] = 'image';
-                $payload['media'] = $data['link'];
-                $payload['caption'] = $data['caption'] ?? "";
-                break;
-            case 'location':
-                $url = "{$urlbase}/message/sendLocation/{$instance}";
-
-                $payload["latitude"]  = (float) $data['latitude'];
-                $payload["longitude"] = (float) $data['longitude'];
-                $payload["name"] = $data['name'];
-                $payload["address"] = $data['address'];
-
-                break;
-            case 'document':
-                $url = "{$urlbase}/message/sendMedia/{$instance}";
-
-                $payload['mediatype'] = 'document';
-                $payload['media'] = $data['link'];
-                $payload['fileName'] = ($data['filename'] ?? 'archivo') . ".pdf";
-                $payload['caption'] = $data['caption'] ?? "";
-                break;
+        if (empty($verifyToken)) {
+            Log::critical('WHATSAPP_VERIFY_TOKEN no está configurado en el servidor.');
+            return response('Service misconfigured', 503);
         }
 
-        return Http::withHeaders(['apikey' => $apikey])->post($url, $payload)->json();
+        $mode = (string) $request->query('hub_mode');
+        $token = (string) $request->query('hub_verify_token');
+        $challenge = (string) $request->query('hub_challenge');
+
+        if ($mode === 'subscribe' && hash_equals((string) $verifyToken, $token)) {
+            return response($challenge, 200)->header('Content-Type', 'text/plain');
+        }
+
+        Log::warning('Verificación de webhook fallida desde IP: ' . $request->ip());
+        return response('No se pudo verificar el token', 403);
+    }
+
+    public function recibirWebhook(Request $request)
+    {
+        $rawContent = $request->getContent();
+        $replayKey = 'wa_replay_' . md5($rawContent . $request->header('X-Hub-Signature-256', ''));
+        if (Cache::has($replayKey)) {
+            return response('DUPLICATE_EVENT_IGNORED', 200);
+        }
+        Cache::put($replayKey, true, now()->addSeconds(30));
+
+        $appSecret = config('services.whatsapp.app_secret');
+        if (empty($appSecret)) {
+            Log::critical('WHATSAPP_APP_SECRET no está configurado en el servidor. Rechazando webhook por fail-closed.');
+            return response('Webhook misconfigured', 503);
+        }
+
+        $signature = $request->header('X-Hub-Signature-256');
+        if (!$signature) {
+            Log::warning('Rechazada petición webhook no autorizada: Falta cabecera X-Hub-Signature-256 de Meta.');
+            return response('Unauthorized: Missing signature', 401);
+        }
+
+        $expectedSignature = 'sha256=' . hash_hmac('sha256', $rawContent, (string) $appSecret);
+        if (!hash_equals($expectedSignature, $signature)) {
+            Log::warning('Rechazada petición webhook no autorizada: Firma X-Hub-Signature-256 no coincide.');
+            return response('Forbidden: Invalid signature', 403);
+        }
+
+        try {
+            $phoneId = $request->input('entry.0.changes.0.value.metadata.phone_number_id');
+
+            // Webhooks de estado de entrega de Meta (enviado, recibido, leído, fallido)
+            $statuses = $request->input('entry.0.changes.0.value.statuses');
+            if (is_array($statuses) && !empty($statuses)) {
+                foreach ($statuses as $st) {
+                    $waMsgId = $st['id'] ?? null;
+                    $estado = $st['status'] ?? null;
+                    if ($waMsgId && $estado) {
+                        $errMsg = null;
+                        if ($estado === 'failed' && !empty($st['errors'][0])) {
+                            $errObj = $st['errors'][0];
+                            $errMsg = ($errObj['title'] ?? 'Error') . ': ' . ($errObj['message'] ?? ($errObj['error_data']['details'] ?? 'Fallo de entrega en Meta'));
+                        }
+                        Mensaje::where('whatsapp_id', $waMsgId)->update([
+                            'status'        => $estado,
+                            'error_message' => $errMsg,
+                        ]);
+                    }
+                }
+                return response('EVENT_RECEIVED', 200);
+            }
+
+            // Si alguien contestó desde la app de WhatsApp del celular, guardamos el mensaje y pausamos el bot
+            $echoData = $request->input('entry.0.changes.0.value.message_echoes.0')
+                ?? $request->input('entry.0.changes.0.value.smb_message_echoes.0');
+
+            if ($echoData && $phoneId) {
+                $instanciaEcho = Instancia::where('phone_number_id', $phoneId)->where('is_active', true)->first();
+                $clienteDestino = $echoData['to'] ?? null;
+                $echoId = $echoData['id'] ?? null;
+                $echoTipo = $echoData['type'] ?? 'text';
+                $echoBody = trim((string) ($echoData['text']['body'] ?? ($echoData[$echoTipo]['caption'] ?? "[{$echoTipo}]")));
+
+                if ($instanciaEcho && $clienteDestino) {
+                    if (empty($echoId) || !Mensaje::where('whatsapp_id', $echoId)->exists()) {
+                        Mensaje::create([
+                            'instancia_id' => $instanciaEcho->id,
+                            'whatsapp_id'  => $echoId,
+                            'from'         => $instanciaEcho->telefono ?? $phoneId,
+                            'to'           => $clienteDestino,
+                            'body'         => $echoBody,
+                            'type'         => $echoTipo,
+                            'direction'    => 'outbound',
+                            'status'       => 'sent',
+                        ]);
+                    }
+
+                    $pauseHours = max(1, (int) ($instanciaEcho->bot_pause_hours ?: 12));
+
+                    UserContext::updateOrCreate(
+                        [
+                            'instancia_id' => $instanciaEcho->id,
+                            'phone_number' => $clienteDestino,
+                        ],
+                        [
+                            'etapa'            => 'asesor',
+                            'is_bot_active'    => false,
+                            'bot_paused_until' => now()->addHours($pauseHours),
+                        ]
+                    );
+                }
+
+                return response('EVENT_RECEIVED', 200);
+            }
+
+            $mensajeData = $request->input('entry.0.changes.0.value.messages.0');
+
+            if (!$mensajeData) {
+                return response('EVENT_RECEIVED', 200);
+            }
+
+            $remitente = $mensajeData['from'] ?? null;
+            $tipo      = $mensajeData['type'] ?? 'unknown';
+            $messageId = $mensajeData['id'] ?? null;
+            $nombre    = $request->input('entry.0.changes.0.value.contacts.0.profile.name') ?? 'Cliente';
+
+            if (!empty($messageId)) {
+                if (Cache::has('wa_msg_' . $messageId)) {
+                    return response('DUPLICATE_EVENT_IGNORED', 200);
+                }
+                Cache::put('wa_msg_' . $messageId, true, now()->addHours(24));
+            }
+
+            if (!$phoneId || !$remitente) {
+                return response('EVENT_RECEIVED', 200);
+            }
+
+            $instancia = Instancia::where('phone_number_id', $phoneId)
+                ->where('is_active', true)
+                ->first()
+                ?? Instancia::where('telefono', $phoneId)->where('is_active', true)->first();
+
+            if (!$instancia) {
+                Log::info("Mensaje recibido para phone_number_id no registrado o inactivo: {$phoneId}.");
+                return response('EVENT_RECEIVED', 200);
+            }
+
+            $texto = '';
+            $mediaUrl = null;
+
+            switch ($tipo) {
+                case 'text':
+                    $texto = trim((string) ($mensajeData['text']['body'] ?? ''));
+                    break;
+
+                case 'interactive':
+                    $interactiveTitle = $mensajeData['interactive']['button_reply']['title']
+                        ?? $mensajeData['interactive']['list_reply']['title']
+                        ?? null;
+                    $interactiveId = $mensajeData['interactive']['button_reply']['id']
+                        ?? $mensajeData['interactive']['list_reply']['id']
+                        ?? null;
+
+                    if (!empty($interactiveTitle)) {
+                        $texto = trim((string) $interactiveTitle);
+                    } elseif (!empty($interactiveId)) {
+                        $opt = is_numeric($interactiveId)
+                            ? Option::where('instancia_id', $instancia->id)->find($interactiveId)
+                            : null;
+                        $texto = ($opt && !empty($opt->text)) ? $opt->text : (string) $interactiveId;
+                    }
+                    break;
+
+                case 'image':
+                case 'video':
+                    $caption = $mensajeData[$tipo]['caption'] ?? '';
+                    $mediaId = $mensajeData[$tipo]['id'] ?? null;
+                    if ($mediaId) {
+                        $downloaded = $this->descargarMediaWhatsApp($mediaId, $instancia);
+                        if ($downloaded) {
+                            $mediaUrl = $downloaded['url'];
+                        }
+                    }
+                    $texto = !empty($caption) ? $caption : ($tipo === 'image' ? '[Imagen]' : '[Video]');
+                    break;
+
+                case 'sticker':
+                    $mediaId = $mensajeData['sticker']['id'] ?? null;
+                    if ($mediaId) {
+                        $downloaded = $this->descargarMediaWhatsApp($mediaId, $instancia);
+                        if ($downloaded) {
+                            $mediaUrl = $downloaded['url'];
+                        }
+                    }
+                    $texto = '[Sticker]';
+                    break;
+
+                case 'audio':
+                    $mediaId = $mensajeData['audio']['id'] ?? null;
+                    $transcripcion = null;
+                    if ($mediaId) {
+                        $downloaded = $this->descargarMediaWhatsApp($mediaId, $instancia);
+                        if ($downloaded) {
+                            $mediaUrl = $downloaded['url'];
+                            $transcripcion = $this->transcribirAudioGroq($downloaded['path']);
+                        }
+                    }
+                    $texto = !empty($transcripcion) ? $transcripcion : '[Audio/Nota de voz]';
+                    break;
+
+                case 'document':
+                    $filename = $mensajeData['document']['filename'] ?? 'archivo';
+                    $mediaId = $mensajeData['document']['id'] ?? null;
+                    if ($mediaId) {
+                        $downloaded = $this->descargarMediaWhatsApp($mediaId, $instancia);
+                        if ($downloaded) {
+                            $mediaUrl = $downloaded['url'];
+                        }
+                    }
+                    $texto = "[Documento: {$filename}]";
+                    break;
+
+                case 'location':
+                    $lat   = $mensajeData['location']['latitude'] ?? '';
+                    $lng   = $mensajeData['location']['longitude'] ?? '';
+                    $texto = "[Ubicación: {$lat}, {$lng}]";
+                    break;
+
+                default:
+                    $texto = "[Mensaje: {$tipo}]";
+                    break;
+            }
+
+            $textoParaGuardar = $texto;
+            if (is_numeric($textoParaGuardar) && strlen($textoParaGuardar) >= 2) {
+                $optFound = Option::where('instancia_id', $instancia->id)->find($textoParaGuardar);
+                if ($optFound && !empty($optFound->text)) {
+                    $textoParaGuardar = $optFound->text;
+                }
+            }
+
+            $mensajeGuardado = Mensaje::create([
+                'instancia_id' => $instancia->id,
+                'whatsapp_id'  => $messageId,
+                'from'         => $remitente,
+                'to'           => $instancia->telefono ?? $phoneId,
+                'body'         => $textoParaGuardar,
+                'type'         => $tipo,
+                'media_url'    => $mediaUrl,
+                'direction'    => 'inbound',
+            ]);
+
+            $nodeQuery = fn () => ChatbotNode::where('instancia_id', $instancia->id);
+
+            $initialNode = (clone $nodeQuery())->whereIn('id', ['principal', 'main', 'principal_' . $instancia->id, 'main_' . $instancia->id])->first()
+                ?? $nodeQuery()->orderBy('created_at', 'asc')->first();
+            $startNodeId = $initialNode ? $initialNode->id : 'main';
+
+            $context = UserContext::firstOrCreate(
+                [
+                    'instancia_id' => $instancia->id,
+                    'phone_number' => $remitente,
+                ],
+                [
+                    'nombre'                    => $nombre,
+                    'current_node'              => $startNodeId,
+                    'etapa'                     => 'nuevo',
+                    'estado_conversacion'       => 'abierta',
+                    'mensajes_sin_leer'         => 0,
+                    'opt_in'                    => true,
+                    'is_bot_active'             => true,
+                    'ultimo_mensaje_cliente_at' => now(),
+                ]
+            );
+
+            $contextUpdates = [
+                'ultimo_mensaje_cliente_at' => now(),
+                'estado_conversacion'       => 'abierta',
+                'mensajes_sin_leer'         => ((int) $context->mensajes_sin_leer) + 1,
+            ];
+            if ($nombre && $context->nombre !== $nombre && $nombre !== 'Cliente') {
+                $contextUpdates['nombre'] = $nombre;
+            }
+            $context->update($contextUpdates);
+
+            if ($context->wasRecentlyCreated) {
+                $context->registrarActividad('creado', 'Contacto registrado por primera vez a través de WhatsApp.', 'WhatsApp Webhook');
+            }
+
+            // Verificación de Horario de Atención Comercial (Fase 2)
+            if (!$instancia->estaEnHorarioAtencion()) {
+                $oooCacheKey = 'wa_ooo_' . $instancia->id . '_' . $remitente;
+                if (!Cache::has($oooCacheKey)) {
+                    Cache::put($oooCacheKey, true, now()->addHours(12));
+                    $msgFueraHorario = $instancia->obtenerMensajeFueraHorario();
+                    if ($msgFueraHorario) {
+                        $this->enviarMensajeWhatsapp($remitente, [
+                            'type' => 'text',
+                            'body' => $msgFueraHorario,
+                        ], $phoneId);
+                    }
+                }
+            }
+
+            $buttonId = $mensajeData['interactive']['button_reply']['id']
+                ?? $mensajeData['interactive']['list_reply']['id']
+                ?? null;
+            $buttonTitle = $mensajeData['interactive']['button_reply']['title']
+                ?? $mensajeData['interactive']['list_reply']['title']
+                ?? null;
+
+            $textoMinuscula = mb_strtolower(trim($texto));
+            $pauseHours = max(1, (int) ($instancia->bot_pause_hours ?: 12));
+
+            // Palabras clave para darse de baja o volver a recibir difusiones masivas
+            if (in_array($textoMinuscula, ['baja', 'stop', 'cancelar suscripcion', 'cancelar suscripción', 'no molestar'], true)) {
+                $context->update(['opt_in' => false]);
+                $this->enviarMensajeWhatsapp($remitente, [
+                    'type' => 'text',
+                    'body' => "Has sido dado de baja de nuestras campañas de difusión de {$instancia->nombre_empresa}. Si deseas volver a suscribirte en el futuro, escribe *ALTA*.",
+                ], $phoneId);
+                return response('EVENT_RECEIVED', 200);
+            }
+
+            if (in_array($textoMinuscula, ['alta', 'suscribirme'], true)) {
+                $context->update(['opt_in' => true]);
+                $this->enviarMensajeWhatsapp($remitente, [
+                    'type' => 'text',
+                    'body' => "¡Gracias! Tu suscripción a las comunicaciones de {$instancia->nombre_empresa} está activa nuevamente.",
+                ], $phoneId);
+                return response('EVENT_RECEIVED', 200);
+            }
+
+            $isGreetingOrReset = in_array($textoMinuscula, [
+                'hola', 'hola!', 'buenas', 'buenos dias', 'buenas tardes', 'buenas noches',
+                'opciones', 'opcion', 'catalogo', 'catálogo', 'menu', 'menú', 'inicio',
+                'empezar', 'reiniciar', 'volver', 'principal', 'btn_menu', 'bot', 'activar bot',
+            ], true)
+                || ($buttonId === 'btn_menu')
+                || preg_match('/^(hola\b|buenos d[ií]as|buenas tardes|buenas noches)/i', $textoMinuscula);
+
+            if ($context->wasRecentlyCreated || $isGreetingOrReset) {
+                $context->update([
+                    'is_bot_active'    => true,
+                    'bot_paused_until' => null,
+                    'current_node'     => $startNodeId,
+                ]);
+
+                if ($initialNode) {
+                    $this->enviarMensajeDinamico($remitente, $startNodeId, $phoneId, $instancia->id);
+                    return response('EVENT_RECEIVED', 200);
+                }
+            }
+
+            if (preg_match('/\b(humano|asesor|agente|persona|operador)\b/i', $textoMinuscula)
+                || in_array($texto, ['opt_humano', 'hablar_asesor', 'btn_asesor'], true)
+                || ($buttonId === 'btn_asesor')
+            ) {
+                $context->update([
+                    'etapa'            => 'asesor',
+                    'is_bot_active'    => false,
+                    'bot_paused_until' => now()->addHours($pauseHours),
+                ]);
+
+                $mensajeHumano = "Entendido, te estamos transfiriendo con un asesor de {$instancia->nombre_empresa}. En breve uno de nuestros agentes te atenderá aquí mismo.\n\n_(Escribe *Opciones* o presiona *Ver opciones* cuando desees volver a interactuar con el bot)._";
+                $this->enviarMensajeWhatsapp($remitente, [
+                    'type'    => 'buttons',
+                    'body'    => $mensajeHumano,
+                    'buttons' => [
+                        ['id' => 'btn_menu', 'title' => 'Ver opciones'],
+                    ],
+                ], $phoneId);
+
+                return response('EVENT_RECEIVED', 200);
+            }
+
+            $botPausado = !$context->is_bot_active || ($context->bot_paused_until && now()->lt($context->bot_paused_until));
+            if ($botPausado) {
+                Log::info("Bot en pausa para {$remitente} en instancia {$instancia->nombre_empresa}. Atendido manualmente por humano.");
+                return response('EVENT_RECEIVED', 200);
+            }
+
+            $currentNodeId = $context->current_node ?: $startNodeId;
+            $opciones = Option::where('instancia_id', $instancia->id)
+                ->where('chatbot_node_id', $currentNodeId)
+                ->get();
+            $opcion = null;
+
+            foreach ($opciones as $cand) {
+                if (($buttonId && (string) $cand->id === (string) $buttonId)
+                    || ((string) $cand->id === (string) $texto)
+                    || (strcasecmp(trim((string) $cand->key), trim($texto)) === 0)
+                    || (strcasecmp(trim((string) $cand->text), trim($texto)) === 0)
+                    || ($buttonTitle && strcasecmp(trim((string) $cand->text), trim((string) $buttonTitle)) === 0)
+                ) {
+                    $opcion = $cand;
+                    break;
+                }
+            }
+
+            if ($opcion) {
+                $candText = mb_strtolower(trim($opcion->text . ' ' . $opcion->key));
+                $isAiTrigger = ($opcion->next_node_id === 'ia' || $opcion->next_node_id === 'ai')
+                    || (empty($opcion->next_node_id) && preg_match('/\b(otra|otro|ia|inteligencia|asesor|consulta|pregunta)\b/i', $candText));
+
+                if ($isAiTrigger) {
+                    $context->update(['current_node' => 'ia']);
+
+                    $msgAiPrompt = '¡Con gusto! Escríbeme tu duda o consulta y con gusto te ayudo de inmediato:';
+                    if (!empty($opcion->respuesta)) {
+                        $msgAiPrompt = is_array($opcion->respuesta) ? ($opcion->respuesta['body'] ?? $msgAiPrompt) : $opcion->respuesta;
+                    }
+
+                    $this->enviarMensajeWhatsapp($remitente, [
+                        'type'    => 'buttons',
+                        'body'    => $msgAiPrompt,
+                        'footer'  => 'Puedes volver cuando quieras:',
+                        'buttons' => [
+                            ['id' => 'btn_menu', 'title' => 'Ver opciones'],
+                            ['id' => 'btn_asesor', 'title' => 'Hablar con asesor'],
+                        ],
+                    ], $phoneId);
+
+                    return response('EVENT_RECEIVED', 200);
+                }
+
+                if ($opcion->respuesta) {
+                    $this->enviarMensajeWhatsapp($remitente, $opcion->respuesta, $phoneId);
+                }
+
+                if ($opcion->next_node_id && ($targetNode = $nodeQuery()->where('id', $opcion->next_node_id)->first())) {
+                    $updateCtx = [
+                        'current_node' => $targetNode->id,
+                        'etapa'        => $targetNode->target_etapa ?: (($context->etapa === 'nuevo' || empty($context->etapa)) ? 'calificado' : $context->etapa),
+                    ];
+
+                    if (!empty($targetNode->auto_tags)) {
+                        $existingTags = is_array($context->etiquetas) ? $context->etiquetas : [];
+                        $newTags = array_filter(array_map('trim', explode(',', $targetNode->auto_tags)));
+                        $updateCtx['etiquetas'] = array_values(array_unique(array_merge($existingTags, $newTags)));
+                    }
+
+                    if ($targetNode->target_etapa === 'asesor') {
+                        $updateCtx['is_bot_active'] = false;
+                        $updateCtx['bot_paused_until'] = now()->addHours($pauseHours);
+                    }
+
+                    $context->update($updateCtx);
+                    $this->enviarMensajeDinamico($remitente, $targetNode->id, $phoneId, $instancia->id);
+                    return response('EVENT_RECEIVED', 200);
+                }
+
+                return response('EVENT_RECEIVED', 200);
+            }
+
+            if (!empty($texto)) {
+                $historial = Mensaje::where('instancia_id', $instancia->id)
+                    ->where('id', '<', $mensajeGuardado->id)
+                    ->where(function ($q) use ($remitente) {
+                        $q->where('from', $remitente)
+                          ->orWhere('to', $remitente);
+                    })
+                    ->latest('id')
+                    ->take(10)
+                    ->get()
+                    ->reverse()
+                    ->values();
+
+                $promptConCatalogo = $instancia->system_prompt;
+                $catalogo = is_array($instancia->catalogo_productos) ? $instancia->catalogo_productos : [];
+                if (!empty($catalogo)) {
+                    $lineasCatalogo = array_map(
+                        fn ($p) => "- " . ($p['nombre'] ?? 'Producto') . " (SKU: " . ($p['sku'] ?? 'N/A') . "): $" . number_format((float) ($p['precio'] ?? 0), 2) . (!empty($p['descripcion']) ? " — " . $p['descripcion'] : ""),
+                        $catalogo
+                    );
+                    $promptConCatalogo = trim((string) $promptConCatalogo) . "\n\nCATÁLOGO OFICIAL DE PRODUCTOS/SERVICIOS:\n" . implode("\n", $lineasCatalogo);
+                }
+
+                $respuestaIA = $this->funRespuestaIA($texto, $promptConCatalogo, $historial, $instancia->nombre_empresa, $instancia);
+
+                if (!empty($respuestaIA)) {
+                    $historialSnapshot = $historial->map(fn ($m) => [
+                        'role'    => $m->direction === 'inbound' ? 'user' : 'assistant',
+                        'content' => $m->body,
+                    ])->push(['role' => 'user', 'content' => $texto])
+                      ->push(['role' => 'assistant', 'content' => $respuestaIA])
+                      ->slice(-12)
+                      ->values()
+                      ->all();
+
+                    $nuevaEtapa = $this->aiService->detectarEtapaPorIntencion($texto, $context->etapa ?: 'nuevo');
+
+                    $context->update([
+                        'ai_history' => $historialSnapshot,
+                        'etapa'      => $nuevaEtapa,
+                    ]);
+
+                    $iaButtons = [];
+                    if ($nodeQuery()->exists()) {
+                        $iaButtons[] = ['id' => 'btn_menu', 'title' => 'Ver opciones'];
+                    }
+                    $iaButtons[] = ['id' => 'btn_asesor', 'title' => 'Hablar con asesor'];
+
+                    $this->enviarMensajeWhatsapp($remitente, [
+                        'type'    => 'buttons',
+                        'body'    => $respuestaIA,
+                        'footer'  => $instancia->nombre_empresa,
+                        'buttons' => $iaButtons,
+                    ], $phoneId);
+                }
+            }
+
+            return response('EVENT_RECEIVED', 200);
+        } catch (\Throwable $e) {
+            Log::error('Error procesando recibirWebhook: ' . $e->getMessage(), [
+                'file'  => $e->getFile(),
+                'line'  => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response('EVENT_RECEIVED', 200);
+        }
     }
 
     public function recibirMensaje(Request $request)
     {
-        // Log::error("LLEGO MENSAJE: ".$request->all());
-        $data = $request->all();
-        $message = $data['entry'][0]['changes'][0]['value']['messages'][0] ?? null;
-
-        if (!$message) return response('No hay Mnesaje', 200);
-
-        $numero = $message['from'];
-        $mensajeUsuario = "";
-
-        if ($message['type'] === 'text') {
-            $mensajeUsuario = trim($message['text']['body']);
-        } elseif ($message['type'] === 'interactive') {
-            $mensajeUsuario = $message['interactive']['button_reply']['id'];
-        }
-
-        // guardar conext del usuario
-        $context = UserContext::firstOrCreate(
-            ['phone_number' => $numero],
-            ['current_node' => 'main']
-        );
-
-        if ($context->wasRecentlyCreated) {
-            $this->enviarMensajeDinamico($numero, 'main');
-            // $this->enviarMensajeDinamicoBotones($numero, 'main');
-            return response('OK', 200);
-        }
-
-
-        // buscar la opcion en la BD
-        $opcion = Option::where('chatbot_node_id', $context->current_node)
-            ->where('key', $mensajeUsuario)
-            ->first();
-        if (!$opcion) {
-
-            // $this->enviarMensajeWhatsapp($numero, ["type" => "text", "body" => "Debe elegir una opción"]);
-            $respuestaIA = $this->funRespuestaIA($mensajeUsuario);
-            $this->enviarMensajeWhatsapp($numero, ["type" => "text", "body" => $respuestaIA]);
-
-            return response('OK', 200);
-        }
-
-        if ($opcion->respuesta) {
-            $this->enviarMensajeWhatsapp($numero, $opcion->respuesta);
-        }
-
-        if($opcion->next_node_id){
-            $context->update(['current_node' => $opcion->next_node_id]);
-            $this->enviarMensajeDinamico($numero, $opcion->next_node_id);
-            // $this->enviarMensajeDinamicoBotones($numero, $opcion->next_node_id);
-        }
-
-
-        return response('OK ' . $numero, 200);
+        return $this->recibirWebhook($request);
     }
 
-    
-    public function recibirMensajeEvolution(Request $request)
+    public function enviarMensajeDinamico($numero, $nodeId, $phoneNumberId = null, ?int $instanciaId = null): void
     {
-        $data = $request->all();
+        $this->whatsAppService->enviarMensajeDinamico((string) $numero, (string) $nodeId, $phoneNumberId, $instanciaId);
+    }
 
-        // Validar evento correcto
-        if (($data['event'] ?? null) !== 'messages.upsert') {
-            return response('Evento no válido', 200);
-        }
-
-        $msgPropio = $data['data']['key']['fromMe'] ?? true;
-
-        if ($msgPropio) {
-            return response('Mensaje propio', 200);
-        }
-
-        // Obtener número limpio
-        $remoteJid = $data['data']['key']['remoteJid'] ?? null;
-        if (!$remoteJid) return response('Sin número', 200);
-
-        $numero = explode('@', $remoteJid)[0];
-
-        $nombre = $data['data']["pushName"];
-
-        // Detectar tipo de mensaje
-        $mensajeUsuario = "";
-
-        $messageType = $data['data']['messageType'] ?? null;
-        $messageData = $data['data']['message'] ?? [];
-
-        if ($messageType === 'conversation') {
-            $mensajeUsuario = trim($messageData['conversation'] ?? '');
-        }
-
-        if ($messageType === 'extendedTextMessage') {
-            $mensajeUsuario = trim($messageData['extendedTextMessage']['text'] ?? '');
-        }
-
-        if ($messageType === 'buttonsResponseMessage') {
-            $mensajeUsuario = $messageData['buttonsResponseMessage']['selectedButtonId'] ?? '';
-        }
-
-        if (!$mensajeUsuario) {
-            return response('No hay mensaje válido', 200);
-        }
-
-        // ====== AQUI EMPIEZA TU LOGICA ORIGINAL ======
-
-        $context = UserContext::firstOrCreate(
-            ['phone_number' => $numero],
-            ['nombre' => $nombre],
-            ['current_node' => 'main']
+    public function funRespuestaIA($mensajeUser, $customPrompt = null, $historial = [], $empresa = null, $instancia = null): string
+    {
+        return $this->aiService->obtenerRespuesta(
+            (string) $mensajeUser,
+            $customPrompt,
+            is_iterable($historial) ? $historial : [],
+            $empresa,
+            $instancia
         );
-
-        if ($context->wasRecentlyCreated) {
-            $this->enviarMensajeDinamico($numero, 'main');
-            return response('OK', 200);
-        }
-
-        $opcion = Option::where('chatbot_node_id', $context->current_node)
-            ->where('key', $mensajeUsuario)
-            ->first();
-
-        if (!$opcion) {
-            $respuestaIA = $this->funRespuestaIA($mensajeUsuario);
-            $this->enviarMensajeWhatsapp($numero, [
-                "type" => "text",
-                "body" => $respuestaIA
-            ]);
-
-            return response('OK', 200);
-        }
-
-        if ($opcion->respuesta) {
-            $this->enviarMensajeWhatsapp($numero, $opcion->respuesta);
-        }
-
-        if ($opcion->next_node_id) {
-            $context->update([
-                'current_node' => $opcion->next_node_id
-            ]);
-
-            $this->enviarMensajeDinamico($numero, $opcion->next_node_id);
-        }
-
-        return response('OK', 200);
-    }
-    /*
-    public function recibirMensajeEvolution(Request $request){
-        $data = $request->all();
-        $msgPropio = $data['data']['key']['fromMe'];
-
-        if ($msgPropio) return response('Mi Mensaje', 200);
-
-        $numero =  $data['data']['key']['remoteJid'];
-        $this->enviarMensajeWhatsapp($numero, ["type" => "text", "body" => "Hola Soy un Bot"]);
-        return response('OK', 200);
-    }
-    */
-
-
-    public function enviarMensajeDinamico($numero, $nodeId){
-        $nodo = ChatbotNode::with('opciones')->find($nodeId);
-
-        if(!$nodo){
-            return;
-        }
-
-        $opcionesTexto = "";
-
-        foreach($nodo->opciones as $opt){
-            $opcionesTexto .= "- 👉 *{$opt->key}*: {$opt->text}\n";
-        }
-
-        $mensajeFinal = "{$nodo->mensaje}\n\n{$opcionesTexto}\n\n> *Indícanos una opción!*";
-        $this->enviarMensajeWhatsapp($numero, [
-            "type" => "text",
-            "body" => $mensajeFinal
-        ]);
-
     }
 
-    public function enviarMensajeDinamicoBotones($numero, $nodeId){
-        $nodo = ChatbotNode::with('opciones')->find($nodeId);
-
-        if(!$nodo){
-            return;
-        }
-
-        $buttons = [];
-        foreach($nodo->opciones as $opt){
-            $buttons[] = [
-                "type" => "reply",
-                "reply" => [
-                    "id" => $opt->key,
-                    "title" => substr($opt->text, 0, 20)
-                ]
-            ];
-        }
-
-        $payload = [
-            "type" => "buttons",
-            "body" => $nodo->mensaje,
-            "buttons" => array_slice($buttons, 0, 3)
-        ];
-
-        $this->enviarMensajeWhatsapp($numero,$payload);
-
+    public function descargarMediaWhatsApp($mediaId, $instancia = null): ?array
+    {
+        return $this->whatsAppService->descargarMedia((string) $mediaId, $instancia);
     }
 
-
-    public function funRespuestaIA($mensajeUser){
-
-        $asesores = User::get();
-
-        $respuesta = Http::withHeaders([
-            'Content-Type' => "application/json",
-            'Authorization' => "Bearer ".env("TOKEN_OPENAI")
-        ])->post("https://api.openai.com/v1/chat/completions", [
-            "model" => "gpt-5",
-            "messages" => [
-                [
-                    "role" => "system",
-                    "content" => "Responde solamante si el cliente necesita asesoramiento por parte de nuestro personal, envia los datos de nuestro asesores si lo solicitan: esta en formato json procesalos y luego envia".$asesores
-                ],
-                [
-                    "role" => "user",
-                    "content" => $mensajeUser
-                ],
-                
-            ]
-        ]);
-
-        return  $respuesta['choices'][0]['message']['content'];
+    public function transcribirAudioGroq($audioFilePath): ?string
+    {
+        return $this->aiService->transcribirAudio((string) $audioFilePath);
     }
 }

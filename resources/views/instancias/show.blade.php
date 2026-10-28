@@ -1,0 +1,1965 @@
+@extends('layouts.app')
+
+@section('title', $instancia->nombre_empresa . ' — Suite CRM Conversacional')
+
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/floating-navbar.css') }}?v={{ file_exists(public_path('css/floating-navbar.css')) ? filemtime(public_path('css/floating-navbar.css')) : time() }}">
+    <link rel="stylesheet" href="{{ asset('css/blueprint-builder.css') }}?v={{ file_exists(public_path('css/blueprint-builder.css')) ? filemtime(public_path('css/blueprint-builder.css')) : time() }}">
+    <link rel="stylesheet" href="{{ asset('css/crm-suite.css') }}?v={{ file_exists(public_path('css/crm-suite.css')) ? filemtime(public_path('css/crm-suite.css')) : time() }}">
+@stop
+
+@section('content_header')
+    <div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <h1 class="saas-page-title">
+                            {{ $instancia->nombre_empresa }}
+                        </h1>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mt-1 text-secondary small flex-wrap">
+                        @if($instancia->telefono)
+                            <span class="font-mono font-weight-600 text-success">
+                                <i class="fab fa-whatsapp mr-1"></i>+{{ $instancia->telefono }}
+                            </span>
+                        @endif
+                        <span class="font-mono text-muted">Phone ID: {{ $instancia->phone_number_id }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <button type="button" class="btn-saas btn-saas-secondary btn-sm" data-toggle="modal" data-target="#modalCrmEtapas">
+                    <i class="fas fa-Sliders-h mr-1"></i> Configurar Etapas
+                </button>
+                <button type="button" class="btn-saas btn-saas-secondary btn-sm" data-toggle="modal" data-target="#modalCrmAutomatizaciones">
+                    <i class="fas fa-bolt text-warning mr-1"></i> Automatizar Embudo
+                </button>
+                @if($isAdmin)
+                    <button type="button" class="btn-saas btn-saas-secondary btn-sm" data-toggle="modal" data-target="#modalConfigTecnica">
+                        <i class="fas fa-users-cog mr-1"></i> Equipo y Ajustes
+                    </button>
+                @endif
+                <button type="button" class="btn-saas btn-saas-primary btn-sm" data-toggle="modal" data-target="#modalCrmNuevoLead">
+                    <i class="fas fa-user-plus mr-1"></i> + Nuevo Lead
+                </button>
+            </div>
+        </div>
+    </div>
+@stop
+
+@section('content')
+    <!-- BARRA DE HERRAMIENTAS CONTEXTUAL FLOTANTE (ELEMENTOS PROPIOS DE LA VISTA ACTIVA) -->
+    <div class="floating-navbar-container">
+        <nav aria-label="Herramientas de la vista activa" class="floating-navbar toolbar-shadow" id="contextualFloatingNavbar">
+
+            <!-- 1. HERRAMIENTAS DE VISTA: DASHBOARD -->
+            <div class="floating-context-group d-none" data-view-tools="dashboard">
+                <button type="button" class="tool-button active" data-dash-view="all" data-action="Dashboard Completo" data-tooltip="Vista Completa">
+                    <i class="fas fa-th-large"></i>
+                </button>
+                <button type="button" class="tool-button" data-dash-view="kpis" data-action="Indicadores KPI" data-tooltip="Solo KPIs">
+                    <i class="fas fa-chart-bar"></i>
+                </button>
+                <button type="button" class="tool-button" data-dash-view="funnel" data-action="Conversión por Etapa" data-tooltip="Embudo de Conversión">
+                    <i class="fas fa-filter"></i>
+                </button>
+                <button type="button" class="tool-button" data-dash-view="activity" data-action="Actividad Reciente" data-tooltip="Actividad en Vivo">
+                    <i class="fas fa-bolt"></i>
+                </button>
+                <a href="{{ route('instancias.contactos.exportar', $instancia->id) }}" class="tool-button" data-action="Exportando CSV" data-tooltip="Exportar CSV">
+                    <i class="fas fa-file-csv"></i>
+                </a>
+            </div>
+
+            <!-- 2. HERRAMIENTAS DE VISTA: EMBUDO (PIPELINE KANBAN) -->
+            <div class="floating-context-group" data-view-tools="pipeline">
+                <button type="button" class="tool-button active" data-pipeline-filter="all" data-action="Todos los Leads" data-tooltip="Todos (Bot + Humano)">
+                    <i class="fas fa-layer-group"></i>
+                </button>
+                <button type="button" class="tool-button" data-pipeline-filter="bot" data-action="Filtro: Solo Bot" data-tooltip="Solo Bot">
+                    <i class="fas fa-robot"></i>
+                </button>
+                <button type="button" class="tool-button" data-pipeline-filter="human" data-action="Filtro: Atención Humana" data-tooltip="Solo Humano">
+                    <i class="fas fa-user-check"></i>
+                </button>
+                <button type="button" class="tool-button" data-toggle="modal" data-target="#modalCrmEtapas" data-action="Configurar Etapas" data-tooltip="Configurar Etapas">
+                    <i class="fas fa-sliders-h"></i>
+                </button>
+                <button type="button" class="tool-button" data-toggle="modal" data-target="#modalCrmAutomatizaciones" data-action="Automatizar Embudo" data-tooltip="Automatizaciones">
+                    <i class="fas fa-bolt"></i>
+                </button>
+                <button type="button" class="tool-button-primary" data-toggle="modal" data-target="#modalCrmNuevoLead" data-action="Nuevo Lead" title="Añadir Nuevo Lead">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+
+            <!-- 3. HERRAMIENTAS DE VISTA: CHATS (BANDEJA OMNICANAL) -->
+            <div class="floating-context-group d-none" data-view-tools="chats">
+                <button type="button" class="tool-button active" data-chat-filter="all" data-action="Todos los Chats" data-tooltip="Todos">
+                    <i class="fas fa-inbox"></i>
+                </button>
+                <button type="button" class="tool-button" data-chat-filter="sin_leer" data-action="Chats Sin Leer" data-tooltip="Sin Leer">
+                    <i class="fas fa-envelope"></i>
+                </button>
+                <button type="button" class="tool-button" data-chat-filter="asesor" data-action="Atención Humana" data-tooltip="Humano">
+                    <i class="fas fa-user-check"></i>
+                </button>
+                <button type="button" class="tool-button" data-chat-filter="cotizacion" data-action="En Cotización" data-tooltip="Cotización">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </button>
+                <button type="button" class="tool-button" data-chat-filter="tareas" data-action="Con Tareas" data-tooltip="Con Tareas">
+                    <i class="fas fa-clock"></i>
+                </button>
+                <button type="button" class="tool-button" data-chat-filter="resuelta" data-action="Chats Resueltos" data-tooltip="Resueltas">
+                    <i class="fas fa-check-circle"></i>
+                </button>
+                <button type="button" class="tool-button" data-chat-filter="bot" data-action="Atendidos por Bot" data-tooltip="Bot">
+                    <i class="fas fa-robot"></i>
+                </button>
+            </div>
+
+            <!-- 4. HERRAMIENTAS DE VISTA: TAREAS -->
+            <div class="floating-context-group d-none" data-view-tools="tareas">
+                <button type="button" class="tool-button active" data-task-view="pendientes" data-action="Tareas Pendientes" data-tooltip="Pendientes">
+                    <i class="fas fa-hourglass-half"></i>
+                </button>
+                <button type="button" class="tool-button" data-task-view="completadas" data-action="Tareas Completadas" data-tooltip="Completadas">
+                    <i class="fas fa-check-double"></i>
+                </button>
+                <button type="button" class="tool-button" data-task-view="todas" data-action="Todas las Tareas" data-tooltip="Todas">
+                    <i class="fas fa-list-ul"></i>
+                </button>
+                <button type="button" class="tool-button-primary" data-task-action="new" data-action="Nueva Tarea" title="Crear Nueva Tarea">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+
+            <!-- 5. HERRAMIENTAS DE VISTA: LISTAS Y CATÁLOGO -->
+            <div class="floating-context-group d-none" data-view-tools="listas">
+                <button type="button" class="tool-button active" data-list-view="contactos" data-action="Directorio de Contactos" data-tooltip="Contactos">
+                    <i class="fas fa-users"></i>
+                </button>
+                <button type="button" class="tool-button" data-list-view="catalogo" data-action="Catálogo de Productos" data-tooltip="Catálogo">
+                    <i class="fas fa-box-open"></i>
+                </button>
+                <button type="button" class="tool-button" data-list-view="plantillas" data-action="Plantillas Rápidas" data-tooltip="Plantillas /">
+                    <i class="fas fa-bolt"></i>
+                </button>
+                <button type="button" class="tool-button" data-list-view="difusion" data-action="Difusión Masiva" data-tooltip="Difusión">
+                    <i class="fas fa-bullhorn"></i>
+                </button>
+                <button type="button" class="tool-button" data-list-view="campos" data-action="Campos Personalizados" data-tooltip="Campos">
+                    <i class="fas fa-sliders-h"></i>
+                </button>
+                <button type="button" class="tool-button" data-list-view="importar" data-action="Importar CSV" data-tooltip="Importar CSV">
+                    <i class="fas fa-file-import"></i>
+                </button>
+                <button type="button" class="tool-button" data-list-view="conocimiento" data-action="Base Conocimiento IA" data-tooltip="Base IA">
+                    <i class="fas fa-brain"></i>
+                </button>
+                <button type="button" class="tool-button" data-list-view="widget" data-action="Enlaces & Widget Web" data-tooltip="Widget Web">
+                    <i class="fas fa-code"></i>
+                </button>
+                <a href="{{ route('instancias.contactos.exportar', $instancia->id) }}" class="tool-button" data-action="Exportando CSV" data-tooltip="Exportar CSV">
+                    <i class="fas fa-file-csv"></i>
+                </a>
+            </div>
+
+            @if($isAdmin)
+                <!-- 6. HERRAMIENTAS DE VISTA: FLUJOS BOT (NODOS) -->
+                <div class="floating-context-group d-none" data-view-tools="nodos">
+                    <button type="button" class="tool-button" data-node-tool="zoom-out" data-action="Alejar Lienzo" data-tooltip="Alejar (-)">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-node-tool="zoom-in" data-action="Acercar Lienzo" data-tooltip="Acercar (+)">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-node-tool="zoom-reset" data-action="Restablecer Vista" data-tooltip="Centrar Vista">
+                        <i class="fas fa-compress-arrows-alt"></i>
+                    </button>
+                    <button type="button" class="tool-button" data-node-tool="auto-layout" data-action="Organizando Nodos" data-tooltip="Auto-Organizar">
+                        <i class="fas fa-magic"></i>
+                    </button>
+                    <button type="button" class="tool-button-primary" data-node-tool="add-node" data-action="Añadir Nodo" title="Añadir Nuevo Nodo">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+
+                <!-- 7. HERRAMIENTAS DE VISTA: AGENTE IA (PROMPT) -->
+                <div class="floating-context-group d-none" data-view-tools="prompt">
+                    <button type="button" class="tool-button active" data-prompt-tool="focus" data-action="Editor de Prompt IA" data-tooltip="Instrucciones IA">
+                        <i class="fas fa-terminal"></i>
+                    </button>
+                    <button type="button" class="tool-button-primary" data-prompt-tool="save" data-action="Guardar Prompt IA" title="Guardar Entrenamiento IA">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            @endif
+        </nav>
+        <div id="floating-feedback" role="status" aria-live="polite" class="floating-feedback"></div>
+    </div>
+
+    <!-- =========================================================================
+         1. PANEL: DASHBOARD & ANALÍTICA EN TIEMPO REAL
+         ========================================================================= -->
+    <div id="pane-dashboard" class="tab-pane-content">
+        <div class="crm-dashboard-grid" id="dash-section-kpis">
+            <div class="crm-stat-card" style="--stat-accent: #3b82f6;">
+                <div class="crm-stat-label"><span>Leads Totales</span> <i class="fas fa-users text-primary"></i></div>
+                <div class="crm-stat-value" id="dash-total-leads">0</div>
+                <div class="crm-stat-sub">Contactos únicos en el embudo</div>
+            </div>
+
+            <div class="crm-stat-card" style="--stat-accent: #6366f1;">
+                <div class="crm-stat-label"><span>Valor en Embudo</span> <i class="fas fa-chart-line text-indigo"></i></div>
+                <div class="crm-stat-value" id="dash-pipeline-value">$0</div>
+                <div class="crm-stat-sub">Suma total de oportunidades</div>
+            </div>
+
+            <div class="crm-stat-card" style="--stat-accent: #10b981;">
+                <div class="crm-stat-label"><span>Ventas Ganadas</span> <i class="fas fa-trophy text-success"></i></div>
+                <div class="crm-stat-value text-success" id="dash-won-value">$0</div>
+                <div class="crm-stat-sub">Conversión: <strong id="dash-conversion-rate">0%</strong></div>
+            </div>
+
+            <div class="crm-stat-card" style="--stat-accent: #f59e0b;">
+                <div class="crm-stat-label"><span>Tareas Pendientes</span> <i class="fas fa-clock text-warning"></i></div>
+                <div class="crm-stat-value" id="dash-pending-tasks">0</div>
+                <div class="crm-stat-sub">Seguimientos activos del equipo</div>
+            </div>
+
+            <div class="crm-stat-card" style="--stat-accent: #0ea5e9;">
+                <div class="crm-stat-label"><span>Tráfico WhatsApp</span> <i class="fab fa-whatsapp text-success"></i></div>
+                <div class="crm-stat-value">{{ $totalInbound + $totalOutbound }}</div>
+                <div class="crm-stat-sub">{{ $totalInbound }} recibidos / {{ $totalOutbound }} enviados</div>
+            </div>
+
+            <div class="crm-stat-card" style="--stat-accent: #ec4899;">
+                <div class="crm-stat-label"><span>Distribución IA vs Humano</span> <i class="fas fa-robot text-primary"></i></div>
+                <div class="crm-stat-value" style="font-size: 1.15rem;" id="dash-bot-ratio">0 Bot / 0 Humano</div>
+                <div class="crm-stat-sub">Coexistencia en tiempo real</div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-7 mb-4" id="dash-section-funnel">
+                <div class="saas-card h-100">
+                    <div class="saas-card-header">
+                        <h3 class="saas-card-title"><i class="fas fa-filter text-primary mr-2"></i>Desglose de Conversión por Etapa del Embudo</h3>
+                    </div>
+                    <div class="saas-card-body" id="crm-dashboard-funnel"></div>
+                </div>
+            </div>
+
+            {{-- <div class="col-lg-5 mb-4" id="dash-section-activity">
+                <div class="saas-card h-100">
+                    <div class="saas-card-header">
+                        <h3 class="saas-card-title"><i class="fas fa-bolt text-warning mr-2"></i>Actividad Reciente en Vivo</h3>
+                    </div>
+                    <div class="saas-card-body p-0" style="max-height: 360px; overflow-y: auto;">
+                        @forelse($mensajesRecientes as $msg)
+                            <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-start gap-2">
+                                <div>
+                                    <span class="badge {{ $msg->direction === 'inbound' ? 'badge-success' : 'badge-primary' }} mr-1">
+                                        {{ $msg->direction === 'inbound' ? 'Entrante' : 'Saliente' }}
+                                    </span>
+                                    <span class="font-mono small text-muted">+{{ $msg->direction === 'inbound' ? $msg->from : $msg->to }}</span>
+                                    <div class="small text-dark mt-1">{{ \Illuminate\Support\Str::limit($msg->body, 90) }}</div>
+                                </div>
+                                <span class="small text-muted flex-shrink-0">{{ $msg->created_at?->diffForHumans() }}</span>
+                            </div>
+                        @empty
+                            <div class="text-center text-muted small py-5">Sin mensajes registrados recientemente.</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div> --}}
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         2. PANEL: EMBUDO DIGITAL CRM (KANBAN PIPELINE DRAG & DROP)
+         ========================================================================= -->
+    <div id="pane-pipeline" class="tab-pane-content active">
+        <div class="crm-pipeline-toolbar">
+            <div class="crm-kpi-group">
+                <div class="crm-kpi-pill">
+                    <i class="fas fa-users text-primary"></i>
+                    <span>Leads Totales:</span>
+                    <strong id="kpi-total-leads">0</strong>
+                </div>
+                <div class="crm-kpi-pill">
+                    <i class="fas fa-coins text-success"></i>
+                    <span>Valor Pipeline:</span>
+                    <strong id="kpi-total-value">$0</strong>
+                </div>
+                <div class="crm-kpi-pill">
+                    <i class="fas fa-user-clock text-danger"></i>
+                    <span>Atención Humana:</span>
+                    <strong id="kpi-human-needed">0</strong>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <select id="selectPipelineBotFilter" class="saas-input py-1 px-2" style="width: auto; height: 34px; font-size: 0.8rem;">
+                    <option value="all">Todos los estados (Bot + Humano)</option>
+                    <option value="bot">Solo atendidos por Bot</option>
+                    <option value="human">Solo intervención Humana</option>
+                </select>
+                <input 
+                    type="text" 
+                    id="inputPipelineSearch" 
+                    class="saas-input py-1 px-3" 
+                    style="width: 240px; height: 34px; font-size: 0.8rem;" 
+                    placeholder="Buscar por nombre, empresa o #tag..."
+                >
+            </div>
+        </div>
+
+        <div class="crm-kanban-board" id="crm-kanban-board"></div>
+    </div>
+
+    <!-- =========================================================================
+         3. PANEL: BANDEJA UNIFICADA 3 COLUMNAS + COPILOTO IA + FICHA LEAD 360°
+         ========================================================================= -->
+    <div id="pane-chats" class="tab-pane-content">
+        <div class="crm-inbox-shell">
+            <!-- COLUMNA 1: LISTA DE CONVERSACIONES Y FILTROS -->
+            <div class="crm-inbox-sidebar">
+                <div class="crm-inbox-search-header">
+                    <input 
+                        type="text" 
+                        id="inputInboxSearch" 
+                        class="saas-input py-1 px-3 w-100" 
+                        style="height: 34px; font-size: 0.82rem;" 
+                        placeholder="Buscar contacto, empresa o número..."
+                    >
+                    <div class="crm-filter-pills">
+                        <button type="button" class="crm-filter-pill active" data-filter="all">Todos</button>
+                        <button type="button" class="crm-filter-pill" data-filter="sin_leer">Sin Leer</button>
+                        <button type="button" class="crm-filter-pill" data-filter="asesor">Humano</button>
+                        <button type="button" class="crm-filter-pill" data-filter="cotizacion">Cotización</button>
+                        <button type="button" class="crm-filter-pill" data-filter="tareas">Con Tareas</button>
+                        <button type="button" class="crm-filter-pill" data-filter="resuelta">Resueltas</button>
+                        <button type="button" class="crm-filter-pill" data-filter="bot">Bot</button>
+                    </div>
+                </div>
+
+                <div class="crm-inbox-list" id="crm-inbox-list"></div>
+            </div>
+
+            <!-- COLUMNA 2: CHAT EN VIVO + BARRA COPILOTO IA + PLANTILLAS (/ATAJO) -->
+            <div class="crm-inbox-main">
+                <div class="crm-chat-topbar">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <strong class="text-dark" id="inbox-active-name" style="font-size: 0.95rem;">Selecciona una conversación</strong>
+                            <span id="inbox-active-node" class="node-slug-tag">#main</span>
+                            <span id="inbox-active-window24h" class="badge badge-secondary d-none" style="font-size: 0.68rem;">Ventana 24h</span>
+                        </div>
+                        <div class="font-mono text-success small font-weight-600" id="inbox-active-phone"></div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <select id="inbox-select-estado-conv" class="saas-input py-0 px-2" style="width: auto; height: 30px; font-size: 0.76rem;" title="Estado de la conversación">
+                            <option value="abierta">🟢 Abierta</option>
+                            <option value="pendiente">🟡 Pendiente</option>
+                            <option value="resuelta">⚪ Resuelta</option>
+                        </select>
+
+                        <select id="inbox-select-asesor" class="saas-input py-0 px-2" style="width: auto; height: 30px; font-size: 0.76rem;" title="Asignar o transferir a un asesor">
+                            <option value="">👤 Sin asignar</option>
+                            @foreach($usuariosEmpresa as $uEmp)
+                                <option value="{{ $uEmp->id }}">👤 {{ $uEmp->name }}</option>
+                            @endforeach
+                        </select>
+
+                        <button type="button" class="btn-saas btn-saas-secondary btn-sm" id="btnInboxIaResumen" title="Generar resumen ejecutivo de 3 puntos con IA">
+                            <i class="fas fa-magic text-primary mr-1"></i> Resumen IA
+                        </button>
+                        <button type="button" class="btn-saas btn-saas-secondary btn-sm" id="btnInboxToggleBot" title="Alternar entre Bot automático e Intervención Humana">
+                            <i class="fas fa-robot mr-1"></i> Bot Activo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Banner Desplegable con Resumen Ejecutivo IA -->
+                <div class="crm-ai-summary-banner" id="crm-ai-summary-banner">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong class="small text-uppercase" style="letter-spacing: 0.04em;">
+                            <i class="fas fa-brain mr-1 text-primary"></i> Resumen Ejecutivo IA
+                        </strong>
+                        <button type="button" class="close" id="btnCloseAiSummary" style="font-size: 1rem;">&times;</button>
+                    </div>
+                    <div class="crm-ai-summary-content" id="crm-ai-summary-text"></div>
+                </div>
+
+                <!-- Contenedor de Burbujas de Mensajes -->
+                <div class="crm-messages-viewport" id="crm-messages-viewport">
+                    <div class="text-center text-muted small py-5">
+                        Selecciona un contacto de la columna izquierda para abrir su conversación.
+                    </div>
+                </div>
+
+                <!-- Barra de Herramientas Copiloto IA + Plantillas Rápidas -->
+                <div class="crm-copilot-bar">
+                    <div id="crmTemplatesPopover" class="crm-templates-popover"></div>
+
+                    <button type="button" class="crm-copilot-btn" id="btnToggleTemplatesPopover" title="Insertar Plantilla Rápida (/atajo)">
+                        <i class="fas fa-bolt text-warning"></i> /Plantillas
+                    </button>
+                    <button type="button" class="crm-copilot-btn" id="btnCopilotSuggest" title="Redactar respuesta sugerida según el contexto">
+                        <i class="fas fa-lightbulb text-primary"></i> Sugerir Respuesta
+                    </button>
+                    <button type="button" class="crm-copilot-btn btn-copilot-tone" data-tono="formal" title="Reescribir borrador en tono corporativo formal">
+                        <i class="fas fa-user-tie"></i> Tono Ejecutivo
+                    </button>
+                    <button type="button" class="crm-copilot-btn btn-copilot-tone" data-tono="amigable" title="Reescribir borrador en tono cálido y amigable">
+                        <i class="fas fa-smile"></i> Tono Amigable
+                    </button>
+                    <button type="button" class="crm-copilot-btn btn-copilot-tone" data-tono="ventas" title="Reescribir borrador enfocado en cierre comercial">
+                        <i class="fas fa-trophy text-success"></i> Tono Cierre
+                    </button>
+                </div>
+
+                <!-- Composer de Envío Directo por WhatsApp / Nota Interna en el Hilo -->
+                <div class="crm-composer-bar" id="crmComposerContainer">
+                    <form id="formCrmInboxSend" class="d-flex gap-2 align-items-center m-0">
+                        @csrf
+                        <button type="button" id="btnToggleInternalNoteMode" class="btn-saas btn-saas-secondary px-2 py-2 flex-shrink-0" title="Alternar entre Mensaje de WhatsApp y Nota Interna del Equipo (invisible para el cliente)">
+                            <i class="fas fa-sticky-note text-warning"></i> <span class="d-none d-md-inline small">Nota Hilo</span>
+                        </button>
+                        <input 
+                            type="text" 
+                            id="inputCrmInboxMessage" 
+                            class="saas-input flex-grow-1" 
+                            placeholder="Escribe un mensaje o escribe / para usar una plantilla rápida..."
+                            autocomplete="off"
+                            required
+                        >
+                        <button type="submit" id="btnCrmInboxSend" class="btn-saas btn-saas-primary px-3 py-2 flex-shrink-0">
+                            <i class="fas fa-paper-plane mr-1"></i> Enviar
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- COLUMNA 3: INSPECTOR CRM 360° DEL LEAD CON PESTAÑAS (PRINCIPAL / PRODUCTOS) -->
+            <div class="crm-inspector">
+                <div class="crm-inspector-tabs">
+                    <button type="button" class="crm-inspector-tab active" data-inspector-tab="main">
+                        <i class="fas fa-id-card mr-1"></i> Principal 360°
+                    </button>
+                    <button type="button" class="crm-inspector-tab" data-inspector-tab="products">
+                        <i class="fas fa-shopping-bag mr-1"></i> Productos / Cotización
+                    </button>
+                    <button type="button" class="crm-inspector-tab" data-inspector-tab="timeline">
+                        <i class="fas fa-history mr-1"></i> Auditoría / Timeline
+                    </button>
+                </div>
+
+                <!-- PESTAÑA 1: FICHA PRINCIPAL -->
+                <div id="inspector-pane-main">
+                    <div class="crm-section">
+                        <div class="form-group mb-2">
+                            <label class="saas-label small mb-1">Nombre del Contacto</label>
+                            <input type="text" id="crm-input-nombre" class="saas-input py-1 px-2" style="height: 30px; font-size: 0.8rem;" placeholder="Nombre del cliente">
+                        </div>
+
+                        <div class="row no-gutters mb-2">
+                            <div class="col-6 pr-1">
+                                <label class="saas-label small mb-1">Empresa</label>
+                                <input type="text" id="crm-input-empresa" class="saas-input py-1 px-2" style="height: 30px; font-size: 0.8rem;" placeholder="Empresa">
+                            </div>
+                            <div class="col-6 pl-1">
+                                <label class="saas-label small mb-1">Email</label>
+                                <input type="email" id="crm-input-email" class="saas-input py-1 px-2" style="height: 30px; font-size: 0.8rem;" placeholder="correo@cliente.com">
+                            </div>
+                        </div>
+
+                        <div class="row no-gutters mb-2">
+                            <div class="col-7 pr-1">
+                                <label class="saas-label small mb-1">Etapa del Embudo</label>
+                                <select id="crm-select-etapa" class="saas-input py-1 px-2" style="height: 30px; font-size: 0.8rem;">
+                                    @foreach($etapas as $key => $meta)
+                                        <option value="{{ $key }}">{{ $meta['label'] ?? $meta['nombre'] ?? $key }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-5 pl-1">
+                                <label class="saas-label small mb-1">Presupuesto ($)</label>
+                                <input type="number" step="0.01" min="0" id="crm-input-valor" class="saas-input font-mono py-1 px-2" style="height: 30px; font-size: 0.8rem;" placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <div id="crm-loss-reason-box" class="form-group mb-2 d-none">
+                            <label class="saas-label small mb-1 text-danger"><i class="fas fa-times-circle mr-1"></i>Motivo de Pérdida *</label>
+                            <input type="text" id="crm-input-motivo-perdida" class="saas-input py-1 px-2" style="height: 30px; font-size: 0.8rem; border-color: #fca5a5;" placeholder="Motivo por el que se perdió la oportunidad">
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between pt-1">
+                            <label class="small text-secondary mb-0 d-flex align-items-center gap-1" style="cursor: pointer;">
+                                <input type="checkbox" id="crm-checkbox-opt-in" checked>
+                                <span>Suscrito a Difusiones (Opt-in)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Campos Personalizados Definidos por la Empresa -->
+                    <div class="crm-section" id="crm-custom-fields-section">
+                        <div class="crm-section-title">
+                            <span><i class="fas fa-sliders-h mr-1 text-indigo"></i> Campos Personalizados</span>
+                        </div>
+                        <div id="crm-custom-fields-container"></div>
+                    </div>
+
+                    <!-- Etiquetas (Tags) -->
+                    <div class="crm-section">
+                        <div class="crm-section-title">
+                            <span><i class="fas fa-tags mr-1 text-success"></i> Etiquetas</span>
+                        </div>
+                        <div id="crm-tags-container" class="crm-tag-list"></div>
+                        <div class="d-flex gap-1">
+                            <input type="text" id="crm-input-new-tag" class="saas-input py-1 px-2" style="height: 30px; font-size: 0.78rem;" placeholder="Nueva etiqueta...">
+                            <button type="button" id="crm-btn-add-tag" class="btn-saas btn-saas-secondary btn-sm px-2 py-1 flex-shrink-0">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tareas y Seguimiento -->
+                    <div class="crm-section">
+                        <div class="crm-section-title">
+                            <span><i class="fas fa-check-square mr-1 text-warning"></i> Tareas de Seguimiento</span>
+                        </div>
+                        <div id="crm-tasks-container" class="mb-2"></div>
+                        <div class="d-flex gap-1 mb-1">
+                            <select id="crm-select-task-type" class="saas-input py-0 px-2" style="height: 28px; font-size: 0.75rem; width: 110px;">
+                                <option value="seguimiento">Seguimiento</option>
+                                <option value="llamada">Llamar</option>
+                                <option value="reunion">Reunión</option>
+                                <option value="cotizacion">Cotización</option>
+                            </select>
+                            <input type="text" id="crm-input-task-title" class="saas-input py-1 px-2 flex-grow-1" style="height: 28px; font-size: 0.78rem;" placeholder="Descripción...">
+                            <button type="button" id="crm-btn-add-task" class="btn-saas btn-saas-secondary btn-sm px-2 py-0 flex-shrink-0">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Notas Internas -->
+                    <div class="crm-section" style="border-bottom: none;">
+                        <div class="crm-section-title">
+                            <span><i class="fas fa-sticky-note mr-1 text-secondary"></i> Notas Internas</span>
+                        </div>
+                        <div id="crm-notes-container" class="mb-2"></div>
+                        <div class="d-flex flex-column gap-1">
+                            <textarea id="crm-input-note-text" class="saas-input p-2" rows="2" style="font-size: 0.78rem;" placeholder="Añadir nota interna para el equipo..."></textarea>
+                            <button type="button" id="crm-btn-add-note" class="btn-saas btn-saas-secondary btn-sm align-self-end py-1 px-2">
+                                <i class="fas fa-plus mr-1"></i> Guardar Nota
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA 2: VINCULAR PRODUCTOS DEL CATÁLOGO AL LEAD -->
+                <div id="inspector-pane-products" class="d-none">
+                    <div class="crm-section">
+                        <div class="crm-section-title">
+                            <span><i class="fas fa-boxes mr-1 text-primary"></i> Cotizador de Productos</span>
+                        </div>
+                        <p class="small text-muted mb-2">
+                            Vincula productos del catálogo de la empresa a este Lead para calcular automáticamente el valor del negocio.
+                        </p>
+
+                        <div class="form-group mb-2">
+                            <select id="crm-select-catalog-product" class="saas-input py-1 px-2" style="height: 32px; font-size: 0.8rem;"></select>
+                        </div>
+                        <div class="d-flex gap-2 mb-3">
+                            <input type="number" id="crm-input-product-qty" class="saas-input py-1 px-2 font-mono" style="width: 80px; height: 32px; font-size: 0.8rem;" value="1" min="1">
+                            <button type="button" id="crm-btn-add-product-to-lead" class="btn-saas btn-saas-primary btn-sm flex-grow-1">
+                                <i class="fas fa-cart-plus mr-1"></i> Agregar al Lead
+                            </button>
+                        </div>
+
+                        <div id="crm-lead-products-list" class="mb-3"></div>
+
+                        <div class="d-flex justify-content-between align-items-center p-2" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+                            <span class="small font-weight-bold text-secondary">Total Cotizado:</span>
+                            <strong class="font-mono text-success" id="crm-lead-products-total" style="font-size: 1rem;">$0</strong>
+                        </div>
+
+                        <div class="mt-3 p-3" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:10px;">
+                            <div class="small font-weight-bold text-dark mb-2"><i class="fas fa-file-invoice-dollar text-primary mr-1"></i> Cotización Oficial PDF</div>
+                            <div class="row no-gutters mb-2">
+                                <div class="col-7 pr-1">
+                                    <label class="saas-label small mb-1">Folio Cotización</label>
+                                    <input type="text" id="crm-quote-folio" class="saas-input py-1 px-2 font-mono" style="height: 28px; font-size: 0.75rem;" placeholder="COT-Auto">
+                                </div>
+                                <div class="col-5 pl-1">
+                                    <label class="saas-label small mb-1">IVA %</label>
+                                    <input type="number" id="crm-quote-tax" class="saas-input py-1 px-2 font-mono" style="height: 28px; font-size: 0.75rem;" value="{{ $datosFiscales['porcentaje_impuesto'] ?? 16 }}" min="0" max="100">
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" id="crm-btn-download-pdf-quote" class="btn-saas btn-saas-secondary btn-sm flex-fill" title="Descargar Cotización en PDF">
+                                    <i class="fas fa-file-pdf text-danger mr-1"></i> PDF
+                                </button>
+                                <button type="button" id="crm-btn-send-whatsapp-quote" class="btn-saas btn-saas-primary btn-sm flex-fill" title="Enviar PDF oficial por WhatsApp">
+                                    <i class="fab fa-whatsapp mr-1"></i> Enviar WhatsApp
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-3" id="crm-lead-quotes-history-container">
+                            <div class="crm-section-title">
+                                <span><i class="fas fa-clock mr-1 text-secondary"></i> Cotizaciones Enviadas</span>
+                            </div>
+                            <div id="crm-lead-quotes-history-list" class="small text-muted"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA 3: AUDITORÍA Y TIMELINE CRONOLÓGICO -->
+                <div id="inspector-pane-timeline" class="d-none">
+                    <div class="crm-section" style="border-bottom: none;">
+                        <div class="crm-section-title d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-stream mr-1 text-primary"></i> Línea de Vida (Timeline)</span>
+                            <span class="badge badge-light" id="crm-timeline-count">0 eventos</span>
+                        </div>
+                        <p class="small text-muted mb-2">
+                            Historial cronológico inmutable de cambios de etapa, cotizaciones, notas y asignaciones.
+                        </p>
+                        <div id="crm-timeline-feed" class="crm-timeline-feed"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         4. PANEL: CENTRO DE TAREAS Y CALENDARIO TO-DO (#pane-tareas)
+         ========================================================================= -->
+    <div id="pane-tareas" class="tab-pane-content">
+        <div class="saas-card mb-3">
+            <div class="saas-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h3 class="saas-card-title"><i class="fas fa-calendar-check text-primary mr-2"></i>Centro de Tareas y Agenda</h3>
+                    <p class="text-muted small mb-0 mt-1">Gestiona llamadas, reuniones, cotizaciones y seguimientos de todos tus leads en un solo lugar.</p>
+                </div>
+                <div class="crm-subnav">
+                    <button type="button" class="crm-subnav-btn active" data-tasks-filter="pendientes">Pendientes</button>
+                    <button type="button" class="crm-subnav-btn" data-tasks-filter="completadas">Completadas</button>
+                    <button type="button" class="crm-subnav-btn" data-tasks-filter="todas">Todas</button>
+                </div>
+            </div>
+
+            <div class="saas-card-body">
+                <form id="formGlobalCreateTask" class="row no-gutters gap-2 align-items-center p-3 mb-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+                    <div class="col-md-3 pr-md-2 mb-2 mb-md-0">
+                        <select id="global-task-lead-select" class="saas-input" required>
+                            <option value="">-- Seleccionar Lead --</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 pr-md-2 mb-2 mb-md-0">
+                        <select id="global-task-type" class="saas-input">
+                            <option value="seguimiento">Seguimiento</option>
+                            <option value="llamada">Llamar</option>
+                            <option value="reunion">Reunión</option>
+                            <option value="cotizacion">Enviar Cotización</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 pr-md-2 mb-2 mb-md-0">
+                        <input type="text" id="global-task-title" class="saas-input" placeholder="Descripción de la tarea..." required>
+                    </div>
+                    <div class="col-md-1 pr-md-2 mb-2 mb-md-0">
+                        <input type="text" id="global-task-due" class="saas-input" placeholder="Plazo / Fecha">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn-saas btn-saas-primary w-100">
+                            <i class="fas fa-plus"></i> Asignar
+                        </button>
+                    </div>
+                </form>
+
+                <div id="crm-global-tasks-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         5. PANEL: LISTAS CRM (CONTACTOS, CATÁLOGO, PLANTILLAS Y DIFUSIÓN MASIVA)
+         ========================================================================= -->
+    <div id="pane-listas" class="tab-pane-content">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div class="crm-subnav">
+                <button type="button" class="crm-subnav-btn active" data-lists-subtab="contactos">
+                    <i class="fas fa-users mr-1"></i> Contactos y Empresas
+                </button>
+                <button type="button" class="crm-subnav-btn" data-lists-subtab="catalogo">
+                    <i class="fas fa-box-open mr-1"></i> Catálogo de Productos
+                </button>
+                <button type="button" class="crm-subnav-btn" data-lists-subtab="plantillas">
+                    <i class="fas fa-bolt mr-1"></i> Plantillas Rápidas (/atajos)
+                </button>
+                <button type="button" class="crm-subnav-btn" data-lists-subtab="difusion">
+                    <i class="fas fa-bullhorn mr-1"></i> Difusión Masiva (Broadcasts)
+                </button>
+                <button type="button" class="crm-subnav-btn" data-lists-subtab="campos">
+                    <i class="fas fa-sliders-h mr-1"></i> Campos Personalizados
+                </button>
+                <button type="button" class="crm-subnav-btn" data-lists-subtab="importar">
+                    <i class="fas fa-file-import mr-1"></i> Importar CSV
+                </button>
+                <button type="button" class="crm-subnav-btn" data-lists-subtab="conocimiento">
+                    <i class="fas fa-brain mr-1"></i> Base IA (RAG)
+                </button>
+                <button type="button" class="crm-subnav-btn" data-lists-subtab="widget">
+                    <i class="fas fa-code mr-1"></i> Enlaces & Widget
+                </button>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a href="{{ route('instancias.contactos.exportar', $instancia->id) }}" class="btn-saas btn-saas-secondary btn-sm">
+                    <i class="fas fa-file-csv text-success mr-1"></i> Exportar Excel / CSV
+                </a>
+            </div>
+        </div>
+
+        <!-- SUB-PESTAÑA 1: DIRECTORIO DE CONTACTOS Y EMPRESAS -->
+        <div id="subpane-contactos" class="saas-card">
+            <div class="saas-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h3 class="saas-card-title">Directorio Unificado de Contactos y Empresas</h3>
+                <input type="text" id="inputDirectorySearch" class="saas-input py-1 px-3" style="width: 280px; height: 34px;" placeholder="Buscar por nombre, empresa, correo o teléfono...">
+            </div>
+            <div class="saas-card-body p-0 table-responsive">
+                <table class="table table-hover mb-0 saas-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Empresa</th>
+                            <th>WhatsApp</th>
+                            <th>Email</th>
+                            <th>Etapa</th>
+                            <th>Valor ($)</th>
+                            <th>Etiquetas</th>
+                            <th class="text-right">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="crm-directory-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SUB-PESTAÑA 2: CATÁLOGO DE PRODUCTOS Y SERVICIOS -->
+        <div id="subpane-catalogo" class="saas-card d-none">
+            <div class="saas-card-header">
+                <h3 class="saas-card-title">Catálogo de Productos y Servicios (Sincronizado con IA y Cotizador)</h3>
+                <p class="text-muted small mb-0 mt-1">Todo producto registrado aquí puede añadirse a las cotizaciones de tus leads y es conocido automáticamente por tu Agente IA.</p>
+            </div>
+            <div class="saas-card-body">
+                <form id="formCrmCatalog" class="row no-gutters gap-2 mb-3 p-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+                    <div class="col-md-2 pr-md-2 mb-2 mb-md-0">
+                        <input type="text" name="sku" class="saas-input" placeholder="Código / SKU">
+                    </div>
+                    <div class="col-md-3 pr-md-2 mb-2 mb-md-0">
+                        <input type="text" name="nombre" class="saas-input" placeholder="Nombre del Producto o Servicio" required>
+                    </div>
+                    <div class="col-md-2 pr-md-2 mb-2 mb-md-0">
+                        <input type="text" name="categoria" class="saas-input" placeholder="Categoría">
+                    </div>
+                    <div class="col-md-2 pr-md-2 mb-2 mb-md-0">
+                        <input type="number" step="0.01" min="0" name="precio" class="saas-input font-mono" placeholder="Precio ($)" required>
+                    </div>
+                    <div class="col-md-2 pr-md-2 mb-2 mb-md-0">
+                        <input type="text" name="descripcion" class="saas-input" placeholder="Descripción">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn-saas btn-saas-primary w-100"><i class="fas fa-plus"></i></button>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 saas-table">
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Producto / Servicio</th>
+                                <th>Categoría</th>
+                                <th>Precio Unitario</th>
+                                <th>Descripción</th>
+                                <th class="text-right">Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crm-catalog-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUB-PESTAÑA 3: PLANTILLAS DE RESPUESTA RÁPIDA (/ATAJOS) -->
+        <div id="subpane-plantillas" class="saas-card d-none">
+            <div class="saas-card-header">
+                <h3 class="saas-card-title">Plantillas de Respuesta Rápida de WhatsApp (Atajos `/`)</h3>
+                <p class="text-muted small mb-0 mt-1">Escribe el comando (ej. <code>/saludo</code> o <code>/cuenta</code>) en el chat para autocompletar el mensaje. Soporta <code>@{{nombre}}</code> y <code>@{{telefono}}</code>.</p>
+            </div>
+            <div class="saas-card-body">
+                <form id="formCrmTemplate" class="row no-gutters gap-2 mb-3 p-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+                    <div class="col-md-2 pr-md-2 mb-2 mb-md-0">
+                        <input type="text" name="atajo" class="saas-input font-mono" placeholder="/atajo" required>
+                    </div>
+                    <div class="col-md-3 pr-md-2 mb-2 mb-md-0">
+                        <input type="text" name="titulo" class="saas-input" placeholder="Título de la plantilla" required>
+                    </div>
+                    <div class="col-md-5 pr-md-2 mb-2 mb-md-0">
+                        <input type="text" name="contenido" class="saas-input" placeholder="Contenido del mensaje..." required>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn-saas btn-saas-primary w-100"><i class="fas fa-save"></i></button>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 saas-table">
+                        <thead>
+                            <tr>
+                                <th>Atajo</th>
+                                <th>Título</th>
+                                <th>Contenido del Mensaje</th>
+                                <th class="text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crm-templates-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUB-PESTAÑA 4: DIFUSIÓN MASIVA / BROADCASTS SEGMENTADOS -->
+        <div id="subpane-difusion" class="saas-card d-none">
+            <div class="saas-card-header">
+                <h3 class="saas-card-title"><i class="fas fa-bullhorn text-primary mr-2"></i>Difusión Masiva por WhatsApp (Broadcasts)</h3>
+                <p class="text-muted small mb-0 mt-1">Envía campañas o avisos personalizados a todos los leads de una etapa del embudo o etiqueta específica.</p>
+            </div>
+            <div class="saas-card-body">
+                <form id="formCrmBroadcast" class="p-3 mb-4" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label class="saas-label">Nombre de la Campaña</label>
+                            <input type="text" name="nombre_campana" class="saas-input" placeholder="Nombre de la campaña" required>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label class="saas-label">Filtrar por Etapa del Embudo</label>
+                            <select name="filtro_etapa" class="saas-input">
+                                <option value="all">Todas las etapas</option>
+                                @foreach($etapas as $key => $meta)
+                                    <option value="{{ $key }}">Solo etapa: {{ $meta['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label class="saas-label">Filtrar por Etiqueta (Opcional)</label>
+                            <input type="text" name="filtro_tag" class="saas-input" placeholder="Etiqueta a filtrar">
+                        </div>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label class="saas-label">Mensaje de WhatsApp (puedes usar <code>@{{nombre}}</code> y <code>@{{empresa}}</code>)</label>
+                        <textarea name="mensaje" class="saas-input" rows="3" placeholder="Escribe el mensaje de la difusión..." required></textarea>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn-saas btn-saas-primary">
+                            <i class="fas fa-paper-plane mr-1"></i> Lanzar Difusión Masiva Ahora
+                        </button>
+                    </div>
+                </form>
+
+                <h6 class="font-weight-bold text-secondary text-uppercase small mb-2">Historial de Campañas Enviadas</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Campaña</th>
+                                <th>Segmento</th>
+                                <th>Mensaje</th>
+                                <th>Métricas de Entrega / Opt-out</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crm-broadcasts-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUB-PESTAÑA 5: CAMPOS PERSONALIZADOS POR EMPRESA -->
+        <div id="subpane-campos" class="saas-card d-none">
+            <div class="saas-card-header">
+                <h3 class="saas-card-title"><i class="fas fa-sliders-h text-primary mr-2"></i>Campos Personalizados de la Ficha del Contacto</h3>
+                <p class="text-muted small mb-0 mt-1">Define campos adicionales exclusivos para esta empresa (texto, número, fecha, lista desplegable o casilla de verificación).</p>
+            </div>
+            <div class="saas-card-body">
+                <form id="formCrmCustomField" class="row no-gutters gap-2 mb-3 p-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+                    <div class="col-md-4 pr-md-2 mb-2 mb-md-0">
+                        <input type="text" name="nombre" class="saas-input" placeholder="Nombre del campo" required>
+                    </div>
+                    <div class="col-md-3 pr-md-2 mb-2 mb-md-0">
+                        <select name="tipo" id="selectCustomFieldType" class="saas-input">
+                            <option value="texto">Texto libre</option>
+                            <option value="numero">Número</option>
+                            <option value="fecha">Fecha</option>
+                            <option value="lista">Lista desplegable</option>
+                            <option value="casilla">Casilla (Sí / No)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 pr-md-2 mb-2 mb-md-0">
+                        <input type="text" name="opciones" id="inputCustomFieldOptions" class="saas-input" placeholder="Opciones separadas por coma (si es lista)">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn-saas btn-saas-primary w-100"><i class="fas fa-plus"></i></button>
+                    </div>
+                </form>
+
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 saas-table">
+                        <thead>
+                            <tr>
+                                <th>Clave</th>
+                                <th>Nombre del Campo</th>
+                                <th>Tipo de Dato</th>
+                                <th>Opciones Configuradas</th>
+                                <th class="text-right">Eliminar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crm-custom-fields-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUB-PESTAÑA 6: IMPORTADOR MASIVO CSV CON MAPEO -->
+        <div id="subpane-importar" class="saas-card d-none">
+            <div class="saas-card-header">
+                <h3 class="saas-card-title"><i class="fas fa-file-import text-primary mr-2"></i>Importación Masiva de Prospectos (CSV / Excel)</h3>
+                <p class="text-muted small mb-0 mt-1">Carga bases de datos de prospectos desde archivos CSV con detección de delimitadores y mapeo dinámico de columnas.</p>
+            </div>
+            <div class="saas-card-body">
+                <div class="p-4 mb-4 text-center" style="border: 2px dashed #cbd5e1; border-radius: 12px; background: #f8fafc;" id="csvDropZone">
+                    <i class="fas fa-cloud-upload-alt text-primary mb-2" style="font-size: 2.5rem;"></i>
+                    <h5 class="font-weight-bold text-dark mb-1">Selecciona o arrastra tu archivo CSV aquí</h5>
+                    <p class="text-muted small mb-3">Soporta delimitadores estándar de comas o punto y coma (UTF-8 recomendado, máx. 10MB).</p>
+                    <input type="file" id="csvFileInput" accept=".csv,.txt" class="d-none">
+                    <button type="button" class="btn-saas btn-saas-primary btn-sm px-3" onclick="document.getElementById('csvFileInput').click();">
+                        <i class="fas fa-folder-open mr-1"></i> Explorar Archivo
+                    </button>
+                    <div id="csvFileInfo" class="small text-muted mt-2 font-mono"></div>
+                </div>
+
+                <div id="csvMappingContainer" class="d-none">
+                    <h5 class="font-weight-bold text-dark mb-2"><i class="fas fa-exchange-alt text-primary mr-1"></i> Mapeo de Columnas</h5>
+                    <p class="small text-muted mb-3">Asocia las columnas detectadas en tu archivo con los campos del CRM:</p>
+
+                    <div class="row mb-3" id="csvMappingFields">
+                        <div class="col-md-3 form-group mb-2">
+                            <label class="saas-label small text-danger">Teléfono / WhatsApp *</label>
+                            <select id="mapColPhone" class="saas-input"></select>
+                        </div>
+                        <div class="col-md-3 form-group mb-2">
+                            <label class="saas-label small">Nombre del Lead</label>
+                            <select id="mapColName" class="saas-input"></select>
+                        </div>
+                        <div class="col-md-3 form-group mb-2">
+                            <label class="saas-label small">Empresa</label>
+                            <select id="mapColCompany" class="saas-input"></select>
+                        </div>
+                        <div class="col-md-3 form-group mb-2">
+                            <label class="saas-label small">Correo Electrónico</label>
+                            <select id="mapColEmail" class="saas-input"></select>
+                        </div>
+                        <div class="col-md-4 form-group mb-2">
+                            <label class="saas-label small">Etiqueta Inicial</label>
+                            <select id="mapColTag" class="saas-input"></select>
+                        </div>
+                        <div class="col-md-4 form-group mb-2">
+                            <label class="saas-label small">Valor Estimado ($)</label>
+                            <select id="mapColValue" class="saas-input"></select>
+                        </div>
+                        <div class="col-md-4 form-group mb-2">
+                            <label class="saas-label small">Etapa del Embudo</label>
+                            <select id="mapColStage" class="saas-input"></select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="saas-label small"><i class="fas fa-eye mr-1 text-secondary"></i> Vista Previa (Primeras 5 Filas)</label>
+                        <div class="table-responsive" style="max-height: 200px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                            <table class="table table-sm table-striped mb-0 saas-table" id="csvPreviewTable">
+                                <thead class="thead-light"><tr id="csvPreviewHead"></tr></thead>
+                                <tbody id="csvPreviewBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn-saas btn-saas-secondary btn-sm" id="btnCancelCsvImport">Cancelar</button>
+                        <button type="button" class="btn-saas btn-saas-primary btn-sm px-4" id="btnRunCsvImport">
+                            <i class="fas fa-play mr-1"></i> Iniciar Importación Masiva
+                        </button>
+                    </div>
+                </div>
+
+                <div id="csvResultCard" class="d-none mt-3 p-3" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;">
+                    <h6 class="font-weight-bold text-success mb-2"><i class="fas fa-check-circle mr-1"></i> Importación Finalizada</h6>
+                    <div class="row text-center font-mono" id="csvResultStats">
+                        <div class="col-4">
+                            <span class="d-block small text-muted">Creados</span>
+                            <strong class="text-success h5" id="csvCountCreated">0</strong>
+                        </div>
+                        <div class="col-4">
+                            <span class="d-block small text-muted">Actualizados</span>
+                            <strong class="text-primary h5" id="csvCountUpdated">0</strong>
+                        </div>
+                        <div class="col-4">
+                            <span class="d-block small text-muted">Omitidos / Inválidos</span>
+                            <strong class="text-secondary h5" id="csvCountSkipped">0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUB-PESTAÑA 7: BASE DE CONOCIMIENTO RAG PARA AGENTE IA -->
+        <div id="subpane-conocimiento" class="saas-card d-none">
+            <div class="saas-card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h3 class="saas-card-title"><i class="fas fa-brain text-primary mr-2"></i>Base de Conocimiento RAG para Inteligencia Artificial</h3>
+                    <p class="text-muted small mb-0 mt-1">
+                        Inyecta políticas comerciales, listas de preguntas frecuentes, términos y especificaciones que el Agente IA consultará al responder en tiempo real.
+                    </p>
+                </div>
+                <button type="button" class="btn-saas btn-saas-primary btn-sm" id="btnOpenAddArticleModal">
+                    <i class="fas fa-plus mr-1"></i> Añadir Artículo / FAQ
+                </button>
+            </div>
+            <div class="saas-card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 saas-table">
+                        <thead>
+                            <tr>
+                                <th>Título del Artículo / FAQ</th>
+                                <th>Categoría</th>
+                                <th>Palabras Clave</th>
+                                <th>Resumen de Contenido</th>
+                                <th class="text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="crm-knowledge-tbody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Formulario desplegable para nuevo artículo -->
+                <div id="knowledgeArticleDrawer" class="d-none mt-4 p-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+                    <h5 class="font-weight-bold text-dark mb-2" id="knowledgeDrawerTitle"><i class="fas fa-edit text-primary mr-1"></i> Artículo de Conocimiento</h5>
+                    <form id="formKnowledgeItem">
+                        <input type="hidden" id="knowledgeItemId" value="">
+                        <div class="row">
+                            <div class="col-md-7 form-group mb-2">
+                                <label class="saas-label small">Título o Pregunta Frecuente *</label>
+                                <input type="text" id="knowledgeTitle" class="saas-input" placeholder="Ej: ¿Cuáles son las formas de pago aceptadas?" required>
+                            </div>
+                            <div class="col-md-5 form-group mb-2">
+                                <label class="saas-label small">Categoría</label>
+                                <input type="text" id="knowledgeCategory" class="saas-input" placeholder="Ej: Facturación, Envíos, Garantías">
+                            </div>
+                        </div>
+                        <div class="form-group mb-2">
+                            <label class="saas-label small">Palabras Clave (Separadas por comas)</label>
+                            <input type="text" id="knowledgeKeywords" class="saas-input" placeholder="pago, transferencia, tarjeta, tarjeta de crédito, paypal">
+                        </div>
+                        <div class="form-group mb-3">
+                            <label class="saas-label small">Contenido / Respuesta Completa para la IA *</label>
+                            <textarea id="knowledgeContent" class="saas-input p-2" rows="4" placeholder="Escribe la explicación exacta que la IA debe tomar como fuente fidedigna..." required></textarea>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn-saas btn-saas-secondary btn-sm" id="btnCancelKnowledgeItem">Cancelar</button>
+                            <button type="submit" class="btn-saas btn-saas-primary btn-sm px-3">
+                                <i class="fas fa-save mr-1"></i> Guardar en Base de Conocimiento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUB-PESTAÑA 8: ENLACES wa.me Y WIDGET WEB EMBEBIBLE -->
+        <div id="subpane-widget" class="saas-card d-none">
+            <div class="saas-card-header">
+                <h3 class="saas-card-title"><i class="fas fa-code text-primary mr-2"></i>Generador de Enlaces Directos & Widget Web Embebible</h3>
+                <p class="text-muted small mb-0 mt-1">
+                    Capta prospectos desde cualquier sitio web, anuncio publicitario o red social directamente hacia tu embudo.
+                </p>
+            </div>
+            <div class="saas-card-body">
+                <div class="row">
+                    <!-- Generador de Enlaces wa.me con UTMs -->
+                    <div class="col-md-6 mb-4">
+                        <div class="p-3 h-100" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;">
+                            <h5 class="font-weight-bold text-dark mb-2"><i class="fab fa-whatsapp text-success mr-1"></i> Enlace Directo wa.me</h5>
+                            <p class="small text-muted mb-3">Genera links personalizados con mensaje inicial y parámetros UTM para medir campañas de marketing.</p>
+                            
+                            <div class="form-group mb-2">
+                                <label class="saas-label small">Número de WhatsApp</label>
+                                <input type="text" id="linkPhone" class="saas-input font-mono" value="{{ $instancia->telefono }}" placeholder="5215500000000">
+                            </div>
+                            <div class="form-group mb-2">
+                                <label class="saas-label small">Mensaje Prellenado</label>
+                                <input type="text" id="linkMessage" class="saas-input" value="Hola, deseo información sobre sus productos." placeholder="Mensaje inicial del prospecto">
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-6">
+                                    <label class="saas-label small">UTM Source</label>
+                                    <input type="text" id="linkUtmSource" class="saas-input font-mono py-1" value="web" placeholder="facebook, google, web">
+                                </div>
+                                <div class="col-6">
+                                    <label class="saas-label small">UTM Campaign</label>
+                                    <input type="text" id="linkUtmCampaign" class="saas-input font-mono py-1" value="direct" placeholder="promo_verano">
+                                </div>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label class="saas-label small">URL Generada</label>
+                                <div class="input-group">
+                                    <input type="text" id="linkResultUrl" class="saas-input font-mono small py-1" readonly>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnCopyLink"><i class="fas fa-copy"></i> Copiar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Widget Web Embebible (Burbuja flotante) -->
+                    <div class="col-md-6 mb-4">
+                        <div class="p-3 h-100" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;">
+                            <h5 class="font-weight-bold text-dark mb-2"><i class="fas fa-comment-dots text-primary mr-1"></i> Widget de Chat para Sitio Web</h5>
+                            <p class="small text-muted mb-3">Inserta este botón flotante en cualquier sitio web (HTML, WordPress, Shopify, Webflow) con solo pegar una línea de código antes de &lt;/body&gt;:</p>
+                            
+                            <div class="form-group mb-3">
+                                <label class="saas-label small">Código Embebible (HTML / JS)</label>
+                                <textarea id="widgetSnippetCode" class="saas-input font-mono small p-2" rows="6" readonly style="background:#1e293b; color:#e2e8f0; font-size:0.75rem;"></textarea>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small text-muted"><i class="fas fa-bolt text-warning mr-1"></i> Cero dependencias externas</span>
+                                <button type="button" class="btn-saas btn-saas-primary btn-sm" id="btnCopyWidgetCode">
+                                    <i class="fas fa-copy mr-1"></i> Copiar Código del Widget
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if($isAdmin)
+        <!-- =========================================================================
+             6. PANEL: CONSTRUCTOR DE FLUJOS CONVERSACIONALES (SOLO ADMINISTRADOR)
+             ========================================================================= -->
+        <div id="pane-nodos" class="tab-pane-content">
+            <div class="n8n-wrapper">
+                <div class="n8n-toolbar">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="n8n-flow-title">Constructor de Flujos</span>
+                        <span class="text-muted small ml-2 font-mono" id="n8n-count-display">{{ $nodes->count() }} nodos</span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="n8n-zoom-controls">
+                            <button type="button" class="n8n-zoom-btn" id="btn-zoom-out" title="Alejar (-)"><i class="fas fa-minus"></i></button>
+                            <span class="n8n-zoom-level" id="n8n-zoom-text">100%</span>
+                            <button type="button" class="n8n-zoom-btn" id="btn-zoom-in" title="Acercar (+)"><i class="fas fa-plus"></i></button>
+                            <button type="button" class="n8n-zoom-btn" id="btn-zoom-reset" title="Restablecer vista"><i class="fas fa-compress-arrows-alt"></i></button>
+                            <button type="button" class="n8n-zoom-btn" id="btn-auto-layout" title="Organizar nodos en columnas limpias"><i class="fas fa-magic"></i> Organizar</button>
+                        </div>
+
+                        <button type="button" class="btn-n8n-add" id="btn-add-node-canvas">
+                            <i class="fas fa-plus"></i> Añadir Nodo
+                        </button>
+                    </div>
+                </div>
+
+                <div class="n8n-viewport" id="n8n-viewport">
+                    <div id="n8n-empty-watermark" class="n8n-empty-blueprint">
+                        <div class="n8n-empty-blueprint-icon"><i class="fas fa-project-diagram"></i></div>
+                        <div class="n8n-empty-blueprint-title">Lienzo de Flujos Vacío</div>
+                        <div class="n8n-empty-blueprint-desc">Haz clic en <strong>+ Añadir Nodo</strong> para crear el primer bloque conversacional de esta instancia.</div>
+                    </div>
+
+                    <div class="n8n-world" id="n8n-world">
+                        <svg class="n8n-connections-svg" id="n8n-connections-svg"></svg>
+                        <div id="n8n-nodes-layer"></div>
+                    </div>
+
+                    <div id="ue5-canvas-menu" class="ue5-context-menu">
+                        <div class="ue5-context-menu-item" id="menu-item-auto-layout"><i class="fas fa-magic text-muted"></i> Organizar Nodos</div>
+                        <div class="ue5-context-menu-item" id="menu-item-reset-view"><i class="fas fa-compress-arrows-alt text-muted"></i> Restablecer Vista</div>
+                    </div>
+
+                    <div class="n8n-drawer" id="n8n-drawer">
+                        <div class="n8n-drawer-header">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="n8n-badge-icon badge-regular" id="drawer-node-badge"></div>
+                                <div>
+                                    <h5 class="n8n-drawer-title" id="drawer-title"></h5>
+                                    <span class="font-mono text-muted small" id="drawer-subtitle">#main</span>
+                                </div>
+                            </div>
+                            <button type="button" class="close text-light" id="btn-close-drawer" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+                        </div>
+
+                        <div class="n8n-drawer-body">
+                            <div class="form-group mb-3">
+                                <label class="saas-label font-weight-600 mb-1">Identificador del Nodo</label>
+                                <input type="text" id="drawer_input_id" class="saas-input font-mono" placeholder="main">
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label class="saas-label font-weight-600 mb-1"><i class="fab fa-whatsapp text-success mr-1"></i> Mensaje enviado por WhatsApp:</label>
+                                <textarea id="drawer_input_message" class="saas-input font-mono" rows="4" placeholder="Mensaje que recibe el cliente"></textarea>
+                            </div>
+
+                            <div class="p-2 mb-3" style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 10px;">
+                                <div class="small font-weight-bold text-info mb-2"><i class="fas fa-bolt mr-1"></i> Acción Automática en Embudo CRM</div>
+                                <div class="form-group mb-2">
+                                    <label class="saas-label small mb-1">Mover Lead a Etapa (Opcional)</label>
+                                    <select id="drawer_input_target_etapa" class="saas-input">
+                                        <option value="">-- No cambiar etapa --</option>
+                                        @foreach($etapas as $key => $meta)
+                                            <option value="{{ $key }}">Mover a: {{ $meta['label'] ?? $meta['nombre'] ?? $key }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="saas-label small mb-1">Asignar Etiquetas Automáticas (separadas por coma)</label>
+                                    <input type="text" id="drawer_input_auto_tags" class="saas-input" placeholder="ej: Interesado, Cotización, VIP">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="saas-label n8n-drawer-label-uppercase">Ramas / Opciones del Cliente</label>
+                                    <button type="button" class="btn btn-xs btn-outline-primary" id="btn-drawer-add-opt"><i class="fas fa-plus mr-1"></i> Añadir Rama</button>
+                                </div>
+
+                                <div id="drawer-notice" class="drawer-notice"></div>
+
+                                <div id="new-branch-panel" class="new-branch-panel">
+                                    <div class="new-branch-panel-header">
+                                        <span class="new-branch-panel-title"><i class="fas fa-code-branch text-primary"></i> Nueva Rama</span>
+                                        <button type="button" class="new-branch-panel-close" id="btn-cancel-new-branch" aria-label="Cerrar">&times;</button>
+                                    </div>
+                                    <div class="row no-gutters mb-2">
+                                        <div class="col-4 pr-1">
+                                            <label class="new-branch-label">Tecla</label>
+                                            <input type="text" id="new-branch-key" class="saas-input new-branch-input-key" placeholder="1">
+                                        </div>
+                                        <div class="col-8">
+                                            <label class="new-branch-label">Texto de la opción</label>
+                                            <input type="text" id="new-branch-text" class="saas-input new-branch-input-text" placeholder="ej: Ver Catálogo">
+                                        </div>
+                                    </div>
+                                    <div class="new-branch-field-group">
+                                        <label class="new-branch-label">Saltar al nodo (Opcional)</label>
+                                        <select id="new-branch-next" class="saas-input new-branch-select">
+                                            <option value="">-- Sin salto (Respuesta final) --</option>
+                                        </select>
+                                    </div>
+                                    <div class="new-branch-actions">
+                                        <button type="button" class="btn-saas btn-saas-secondary new-branch-btn" id="btn-cancel-new-branch-2">Cancelar</button>
+                                        <button type="button" class="btn-saas btn-saas-primary new-branch-btn" id="btn-submit-new-branch"><i class="fas fa-check mr-1"></i> Guardar Rama</button>
+                                    </div>
+                                </div>
+
+                                <div id="drawer-options-list" class="d-flex flex-column gap-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="n8n-drawer-footer">
+                            <button type="button" class="btn-saas btn-saas-danger btn-sm" id="btn-drawer-delete-node"><i class="fas fa-trash-alt mr-1"></i> Eliminar Nodo</button>
+                            <button type="button" class="btn-saas btn-saas-primary btn-sm" id="btn-drawer-save-node"><i class="fas fa-save mr-1"></i> Guardar Cambios</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =========================================================================
+             7. PANEL: ENTRENAMIENTO DEL AGENTE IA 
+             ========================================================================= -->
+        <div id="pane-prompt" class="tab-pane-content">
+            <div class="row">
+                <div class="col-lg-12 mb-4 mb-lg-0">
+                    <div class="saas-card h-100 d-flex flex-column">
+                        <div class="saas-card-header">
+                            <h3 class="saas-card-title">Entrenamiento e Instrucciones del Agente IA</h3>
+                        </div>
+
+                        <form action="{{ route('instancias.update', $instancia->id) }}" method="POST" class="saas-card-body d-flex flex-column flex-grow-1">
+                            @csrf
+                            @method('PUT')
+
+                            <input type="hidden" name="nombre_empresa" value="{{ $instancia->nombre_empresa }}">
+                            <input type="hidden" name="phone_number_id" value="{{ $instancia->phone_number_id }}">
+                            <input type="hidden" name="waba_id" value="{{ $instancia->waba_id }}">
+                            <input type="hidden" name="telefono" value="{{ $instancia->telefono }}">
+
+                            <div class="form-group flex-grow-1 d-flex flex-column mb-3">
+                                <textarea 
+                                    id="live_system_prompt" 
+                                    name="system_prompt" 
+                                    class="prompt-editor-box flex-grow-1 font-mono" 
+                                    placeholder="Escribe el prompt del agente de IA"
+                                >{{ $instancia->system_prompt }}</textarea>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center pt-2">
+                                <button type="submit" id="btnGuardarPrompt" class="btn-saas btn-saas-primary font-weight-bold" disabled>
+                                    <i class="fas fa-save mr-1"></i> Guardar Entrenamiento IA
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- =========================================================================
+         MODAL 1: CREAR NUEVO LEAD MANUALMENTE EN EL EMBUDO CRM
+         ========================================================================= -->
+    <div class="modal fade" id="modalCrmNuevoLead" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content saas-modal">
+                <div class="modal-header saas-modal-header">
+                    <h5 class="modal-title font-weight-bold text-dark"><i class="fas fa-user-plus text-primary mr-2"></i>Añadir Nuevo Lead al Embudo</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <form id="formCrmCreateLead">
+                    <div class="modal-body p-4">
+                        <div class="form-group">
+                            <label class="saas-label">Nombre Completo *</label>
+                            <input type="text" name="nombre" class="saas-input" placeholder="Nombre del contacto" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label class="saas-label">Teléfono WhatsApp *</label>
+                                <input type="text" name="phone_number" class="saas-input font-mono" placeholder="Número de WhatsApp" required>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="saas-label">Empresa / Negocio</label>
+                                <input type="text" name="empresa_cliente" class="saas-input" placeholder="Empresa o negocio">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 form-group">
+                                <label class="saas-label">Correo Electrónico</label>
+                                <input type="email" name="email" class="saas-input" placeholder="Correo electrónico">
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label class="saas-label">Valor Estimado ($)</label>
+                                <input type="number" step="0.01" min="0" name="valor_estimado" class="saas-input font-mono" value="0">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 form-group mb-0">
+                                <label class="saas-label">Etapa Inicial</label>
+                                <select name="etapa" class="saas-input">
+                                    @foreach($etapas as $key => $meta)
+                                        <option value="{{ $key }}">{{ $meta['label'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6 form-group mb-0">
+                                <label class="saas-label">Etiquetas (separadas por coma)</label>
+                                <input type="text" name="etiquetas" class="saas-input" placeholder="Etiquetas separadas por coma">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer saas-modal-footer">
+                        <button type="button" class="btn-saas btn-saas-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn-saas btn-saas-primary"><i class="fas fa-check mr-1"></i> Crear Lead</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         MODAL 2: AUTOMATIZACIONES DEL EMBUDO DIGITAL (DISPARADORES POR ETAPA)
+         ========================================================================= -->
+    <div class="modal fade" id="modalCrmAutomatizaciones" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content saas-modal">
+                <div class="modal-header saas-modal-header">
+                    <h5 class="modal-title font-weight-bold text-dark"><i class="fas fa-bolt text-warning mr-2"></i>Automatizaciones del Embudo Digital</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <form id="formCrmStageAutomations">
+                    <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+                        <p class="small text-muted mb-3">
+                            Configura qué acciones automáticas debe ejecutar el sistema cuando un Lead entra a cada etapa del embudo (mensaje automático de WhatsApp, etiqueta automática, creación de tarea o pausa/activación del bot).
+                        </p>
+                        @foreach($etapas as $key => $meta)
+                            @php
+                                $regla = $pipelineAutomations[$key] ?? [];
+                            @endphp
+                            <div class="p-3 mb-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid {{ $meta['color'] }}; border-radius:10px;">
+                                <div class="font-weight-bold text-dark mb-2">
+                                    <i class="{{ $meta['icon'] }} mr-1" style="color:{{ $meta['color'] }}"></i> Cuando un Lead entra a: {{ $meta['label'] }}
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 form-group mb-2">
+                                        <label class="saas-label small mb-1">Enviar WhatsApp automático (Opcional)</label>
+                                        <input type="text" id="auto_msg_{{ $key }}" class="saas-input py-1 px-2" value="{{ $regla['mensaje_whatsapp'] ?? '' }}" placeholder="Ej: Hola @{{nombre}}, estamos preparando tu propuesta...">
+                                    </div>
+                                    <div class="col-md-6 form-group mb-2">
+                                        <label class="saas-label small mb-1">Crear Tarea Automática (Opcional)</label>
+                                        <input type="text" id="auto_task_{{ $key }}" class="saas-input py-1 px-2" value="{{ $regla['crear_tarea'] ?? '' }}" placeholder="Ej: Llamar para confirmar cierre">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 form-group mb-0">
+                                        <label class="saas-label small mb-1">Agregar Etiqueta Automática</label>
+                                        <input type="text" id="auto_tag_{{ $key }}" class="saas-input py-1 px-2" value="{{ $regla['auto_tag'] ?? '' }}" placeholder="Ej: En Seguimiento">
+                                    </div>
+                                    <div class="col-md-6 form-group mb-0">
+                                        <label class="saas-label small mb-1">Acción sobre el Bot IA</label>
+                                        <select id="auto_bot_{{ $key }}" class="saas-input py-1 px-2">
+                                            <option value="ninguna" {{ ($regla['accion_bot'] ?? '') === 'ninguna' ? 'selected' : '' }}>Sin cambio</option>
+                                            <option value="pausar" {{ ($regla['accion_bot'] ?? '') === 'pausar' ? 'selected' : '' }}>Pausar Bot (Pasar a Humano)</option>
+                                            <option value="activar" {{ ($regla['accion_bot'] ?? '') === 'activar' ? 'selected' : '' }}>Activar Bot</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="modal-footer saas-modal-footer">
+                        <button type="button" class="btn-saas btn-saas-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn-saas btn-saas-primary"><i class="fas fa-save mr-1"></i> Guardar Disparadores del Embudo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         MODAL 2.5: CONFIGURAR ETAPAS DEL EMBUDO POR EMPRESA
+         ========================================================================= -->
+    <div class="modal fade" id="modalCrmEtapas" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content saas-modal">
+                <div class="modal-header saas-modal-header">
+                    <h5 class="modal-title font-weight-bold text-dark"><i class="fas fa-columns text-primary mr-2"></i>Configurar Etapas del Embudo de Ventas</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <form id="formCrmStagesConfig">
+                    <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+                        <p class="small text-muted mb-3">
+                            Personaliza las columnas del embudo para esta empresa (nombre, color e icono). Las etapas finales <strong>Ganado</strong> y <strong>Perdido</strong> se mantienen siempre activas para las métricas de cierre.
+                        </p>
+                        <div id="crm-stages-editor-list" class="d-flex flex-column gap-2 mb-3"></div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button type="button" id="btnAddStageRow" class="btn-saas btn-saas-secondary btn-sm">
+                                <i class="fas fa-plus mr-1"></i> Añadir Nueva Etapa
+                            </button>
+                            <button type="button" id="btnResetDefaultStages" class="btn btn-xs btn-outline-secondary">
+                                <i class="fas fa-undo mr-1"></i> Restaurar Etapas Predeterminadas
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-footer saas-modal-footer">
+                        <button type="button" class="btn-saas btn-saas-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn-saas btn-saas-primary"><i class="fas fa-save mr-1"></i> Guardar Etapas del Embudo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @if($isAdmin)
+        <!-- MODAL 3: CONFIGURACIÓN INTEGRAL DE EMPRESA Y ESCALA SAAS -->
+        <div class="modal fade" id="modalConfigTecnica" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+                <div class="modal-content saas-modal">
+                    <div class="modal-header saas-modal-header d-flex justify-content-between align-items-center">
+                        <h5 class="modal-title font-weight-bold text-dark mb-0">
+                            <i class="fas fa-sliders-h mr-2 text-primary"></i> Configuración Integral de la Empresa
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+                    </div>
+
+                    <!-- Subnavegación de Configuración -->
+                    <div class="p-3 bg-light border-bottom">
+                        <div class="crm-subnav" id="settingsModalNav">
+                            <button type="button" class="crm-subnav-btn active" data-cfg-tab="general">
+                                <i class="fab fa-whatsapp mr-1 text-success"></i> WhatsApp & Instancia
+                            </button>
+                            <button type="button" class="crm-subnav-btn" data-cfg-tab="horarios">
+                                <i class="fas fa-clock mr-1 text-warning"></i> Horarios Comerciales
+                            </button>
+                            <button type="button" class="crm-subnav-btn" data-cfg-tab="fiscal">
+                                <i class="fas fa-file-invoice mr-1 text-primary"></i> Facturación & Cotizaciones
+                            </button>
+                            <button type="button" class="crm-subnav-btn" data-cfg-tab="webhooks">
+                                <i class="fas fa-network-wired mr-1 text-indigo"></i> Webhooks & API REST
+                            </button>
+                            <button type="button" class="crm-subnav-btn" data-cfg-tab="usuarios">
+                                <i class="fas fa-users-cog mr-1 text-secondary"></i> Equipo & Sub-Roles
+                            </button>
+                            <button type="button" class="crm-subnav-btn" data-cfg-tab="plan">
+                                <i class="fas fa-tachometer-alt mr-1 text-info"></i> Consumo & Cuotas IA
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="modal-body p-4" style="max-height: 72vh; overflow-y: auto;">
+                        <!-- TAB 1: GENERAL & WHATSAPP -->
+                        <div id="cfg-pane-general">
+                            <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
+                                Parámetros Técnicos WhatsApp Cloud API y Coexistencia
+                            </h6>
+                            <form id="formAjustesInstancia" action="{{ route('instancias.update', $instancia->id) }}" method="POST">
+                                @csrf
+                                @method('PUT')
+                                <div class="row">
+                                    <div class="col-md-5 form-group">
+                                        <label class="saas-label">Nombre de la Empresa</label>
+                                        <input type="text" name="nombre_empresa" class="saas-input" value="{{ $instancia->nombre_empresa }}" required>
+                                    </div>
+                                    <div class="col-md-4 form-group">
+                                        <label class="saas-label">Número de Teléfono</label>
+                                        <input type="text" name="telefono" class="saas-input" value="{{ $instancia->telefono }}">
+                                    </div>
+                                    <div class="col-md-3 form-group">
+                                        <label class="saas-label">Pausa Bot (Horas)</label>
+                                        <input type="number" name="bot_pause_hours" min="1" max="720" class="saas-input font-mono" value="{{ $instancia->bot_pause_hours ?? 12 }}" required>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 form-group">
+                                        <label class="saas-label">Phone Number ID (Meta)</label>
+                                        <input type="text" name="phone_number_id" class="saas-input font-mono" value="{{ $instancia->phone_number_id }}" required>
+                                    </div>
+                                    <div class="col-md-6 form-group">
+                                        <label class="saas-label">WABA ID</label>
+                                        <input type="text" name="waba_id" class="saas-input font-mono" value="{{ $instancia->waba_id }}">
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" id="btnGuardarAjustes" class="btn-saas btn-saas-primary btn-sm" disabled>
+                                        <i class="fas fa-save mr-1"></i> Guardar Credenciales
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- TAB 2: HORARIOS COMERCIALES -->
+                        <div id="cfg-pane-horarios" class="d-none">
+                            <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
+                                Horarios de Atención Comercial y Respuesta Fuera de Horario
+                            </h6>
+                            <form id="formConfigHorario">
+                                <div class="p-3 mb-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <label class="small font-weight-bold text-dark mb-0 d-flex align-items-center gap-2" style="cursor: pointer;">
+                                            <input type="checkbox" id="cfgHorarioActivo" {{ !empty($horarioAtencion['activo']) ? 'checked' : '' }}>
+                                            <span>Activar Respuesta Automática Fuera de Horario</span>
+                                        </label>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="small text-muted">Zona Horaria:</span>
+                                            <select id="cfgHorarioTimezone" class="saas-input py-1 px-2 font-mono" style="width: 220px; height: 32px; font-size: 0.8rem;">
+                                                @foreach(['America/Mexico_City', 'America/Bogota', 'America/Lima', 'America/Santiago', 'America/Buenos_Aires', 'America/Caracas', 'America/Guatemala', 'America/Panama', 'Europe/Madrid', 'UTC'] as $tz)
+                                                    <option value="{{ $tz }}" {{ ($horarioAtencion['timezone'] ?? 'America/Mexico_City') === $tz ? 'selected' : '' }}>{{ $tz }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <table class="table table-sm table-borderless mb-0">
+                                        <thead>
+                                            <tr class="small text-muted">
+                                                <th style="width: 150px;">Día</th>
+                                                <th style="width: 100px;">Laboral</th>
+                                                <th>Hora Inicio</th>
+                                                <th>Hora Fin</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php
+                                                $diasSemana = [
+                                                    'lunes'     => 'Lunes',
+                                                    'martes'    => 'Martes',
+                                                    'miercoles' => 'Miércoles',
+                                                    'jueves'    => 'Jueves',
+                                                    'viernes'   => 'Viernes',
+                                                    'sabado'    => 'Sábado',
+                                                    'domingo'   => 'Domingo',
+                                                ];
+                                            @endphp
+                                            @foreach($diasSemana as $dKey => $dNom)
+                                                @php
+                                                    $dConf = $horarioAtencion['dias'][$dKey] ?? ['activo' => ($dKey !== 'sabado' && $dKey !== 'domingo'), 'desde' => '09:00', 'hasta' => '18:00'];
+                                                @endphp
+                                                <tr>
+                                                    <td class="font-weight-600 align-middle">{{ $dNom }}</td>
+                                                    <td class="align-middle">
+                                                        <input type="checkbox" class="cfg-day-active" data-day="{{ $dKey }}" {{ !empty($dConf['activo']) ? 'checked' : '' }}>
+                                                    </td>
+                                                    <td>
+                                                        <input type="time" class="saas-input py-0 px-2 cfg-day-start font-mono" data-day="{{ $dKey }}" style="width: 120px; height: 28px; font-size: 0.8rem;" value="{{ $dConf['desde'] ?? '09:00' }}">
+                                                    </td>
+                                                    <td>
+                                                        <input type="time" class="saas-input py-0 px-2 cfg-day-end font-mono" data-day="{{ $dKey }}" style="width: 120px; height: 28px; font-size: 0.8rem;" value="{{ $dConf['hasta'] ?? '18:00' }}">
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label class="saas-label small">Mensaje Automático Fuera de Horario</label>
+                                    <textarea id="cfgHorarioMensaje" class="saas-input p-2" rows="3" placeholder="Mensaje que recibirá el cliente cuando escriba en días inhábiles o fuera de hora...">{{ $horarioAtencion['mensaje_fuera_horario'] ?? '¡Hola! Gracias por comunicarte. En este momento nos encontramos fuera de nuestro horario de atención comercial. Te responderemos a primera hora.' }}</textarea>
+                                </div>
+
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn-saas btn-saas-primary btn-sm px-3">
+                                        <i class="fas fa-save mr-1"></i> Guardar Horario Comercial
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- TAB 3: DATOS FISCALES & COTIZACIONES -->
+                        <div id="cfg-pane-fiscal" class="d-none">
+                            <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
+                                Datos Fiscales, Moneda e Impuestos para Cotizaciones Oficiales PDF
+                            </h6>
+                            <form id="formConfigFiscal">
+                                <div class="row">
+                                    <div class="col-md-7 form-group mb-2">
+                                        <label class="saas-label small">Razón Social o Nombre Legal *</label>
+                                        <input type="text" id="cfgFiscalRazon" class="saas-input" value="{{ $datosFiscales['razon_social'] ?? $instancia->nombre_empresa }}" required>
+                                    </div>
+                                    <div class="col-md-5 form-group mb-2">
+                                        <label class="saas-label small">NIT / RFC / CIF Fiscal</label>
+                                        <input type="text" id="cfgFiscalNit" class="saas-input font-mono" value="{{ $datosFiscales['nit_rfc'] ?? '' }}" placeholder="Ej: ABC123456XYZ">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-8 form-group mb-2">
+                                        <label class="saas-label small">Dirección Fiscal Completa</label>
+                                        <input type="text" id="cfgFiscalDireccion" class="saas-input" value="{{ $datosFiscales['direccion'] ?? '' }}" placeholder="Av. Principal #123, Ciudad, País">
+                                    </div>
+                                    <div class="col-md-4 form-group mb-2">
+                                        <label class="saas-label small">Correo de Contacto / Facturación</label>
+                                        <input type="email" id="cfgFiscalEmail" class="saas-input" value="{{ $datosFiscales['email_contacto'] ?? '' }}" placeholder="ventas@tuempresa.com">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 form-group mb-2">
+                                        <label class="saas-label small">Moneda Principal</label>
+                                        <select id="cfgFiscalMoneda" class="saas-input font-mono">
+                                            @foreach(['USD', 'EUR', 'MXN', 'COP', 'ARS', 'CLP', 'PEN'] as $curr)
+                                                <option value="{{ $curr }}" {{ ($datosFiscales['moneda'] ?? 'USD') === $curr ? 'selected' : '' }}>{{ $curr }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 form-group mb-2">
+                                        <label class="saas-label small">Porcentaje de Impuesto (% IVA / TAX)</label>
+                                        <input type="number" step="0.01" min="0" max="100" id="cfgFiscalImpuesto" class="saas-input font-mono" value="{{ $datosFiscales['porcentaje_impuesto'] ?? 16 }}">
+                                    </div>
+                                    <div class="col-md-4 form-group mb-2">
+                                        <label class="saas-label small">Validez por Defecto (Días)</label>
+                                        <input type="number" min="1" max="365" id="cfgFiscalValidez" class="saas-input font-mono" value="{{ $datosFiscales['validez_dias_default'] ?? 15 }}">
+                                    </div>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label class="saas-label small">Términos, Condiciones y Políticas de Cotización</label>
+                                    <textarea id="cfgFiscalTerminos" class="saas-input p-2" rows="3">{{ $datosFiscales['terminos_condiciones'] ?? 'Esta cotización tiene validez de 15 días calendario. Sujeta a términos y condiciones generales del servicio.' }}</textarea>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn-saas btn-saas-primary btn-sm px-3">
+                                        <i class="fas fa-save mr-1"></i> Guardar Datos Fiscales
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- TAB 4: WEBHOOKS SALIENTES & API REST -->
+                        <div id="cfg-pane-webhooks" class="d-none">
+                            <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
+                                Integración API REST & Disparadores Webhook Salientes
+                            </h6>
+
+                            <!-- Subsección API REST -->
+                            <div class="p-3 mb-4" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                                <h6 class="font-weight-bold text-dark mb-1"><i class="fas fa-key text-warning mr-1"></i> Token API REST de la Empresa</h6>
+                                <p class="small text-muted mb-2">Usa este token para conectar Zapier, Make, tu ERP o sitios web con la API REST v1 de tu CRM.</p>
+                                <div class="input-group mb-2">
+                                    <input type="text" id="cfgApiTokenInput" class="saas-input font-mono small" readonly value="{{ $apiToken ?: 'No generado aún' }}">
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnCopyApiToken"><i class="fas fa-copy"></i> Copiar</button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" id="btnRegenerateApiToken"><i class="fas fa-sync"></i> Regenerar</button>
+                                    </div>
+                                </div>
+                                <div class="small text-muted font-mono" style="font-size:0.75rem;">
+                                    Endpoint: <code>POST /api/v1/leads</code> &bull; Header: <code>Authorization: Bearer &lt;token&gt;</code>
+                                </div>
+                            </div>
+
+                            <!-- Subsección Webhook Saliente -->
+                            <form id="formConfigWebhook">
+                                <div class="p-3 mb-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <label class="small font-weight-bold text-dark mb-0 d-flex align-items-center gap-2" style="cursor: pointer;">
+                                            <input type="checkbox" id="cfgWebhookActivo" {{ !empty($webhookSaliente['activo']) ? 'checked' : '' }}>
+                                            <span>Activar Notificaciones Webhook Salientes (Eventos en Tiempo Real)</span>
+                                        </label>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-7 form-group mb-2">
+                                            <label class="saas-label small">URL de Destino (Endpoint Receptor HTTP POST)</label>
+                                            <input type="url" id="cfgWebhookUrl" class="saas-input font-mono" placeholder="https://api.tuempresa.com/crm-webhook" value="{{ $webhookSaliente['url'] ?? '' }}">
+                                        </div>
+                                        <div class="col-md-5 form-group mb-2">
+                                            <label class="saas-label small">Clave Secreta Firma (HMAC-SHA256)</label>
+                                            <input type="text" id="cfgWebhookSecret" class="saas-input font-mono" placeholder="whsec_xxxxxx" value="{{ $webhookSaliente['secret_key'] ?? '' }}">
+                                        </div>
+                                    </div>
+
+                                    <label class="saas-label small mt-2 mb-1">Eventos a Notificar:</label>
+                                    @php
+                                        $evs = $webhookSaliente['eventos'] ?? ['lead.creado', 'lead.etapa_cambiada'];
+                                    @endphp
+                                    <div class="d-flex flex-wrap gap-3 small text-secondary">
+                                        <label style="cursor: pointer;" class="d-flex align-items-center gap-1">
+                                            <input type="checkbox" class="cfg-webhook-event" value="lead.creado" {{ in_array('lead.creado', $evs) ? 'checked' : '' }}>
+                                            <span>lead.creado</span>
+                                        </label>
+                                        <label style="cursor: pointer;" class="d-flex align-items-center gap-1">
+                                            <input type="checkbox" class="cfg-webhook-event" value="lead.etapa_cambiada" {{ in_array('lead.etapa_cambiada', $evs) ? 'checked' : '' }}>
+                                            <span>lead.etapa_cambiada</span>
+                                        </label>
+                                        <label style="cursor: pointer;" class="d-flex align-items-center gap-1">
+                                            <input type="checkbox" class="cfg-webhook-event" value="lead.asignado" {{ in_array('lead.asignado', $evs) ? 'checked' : '' }}>
+                                            <span>lead.asignado</span>
+                                        </label>
+                                        <label style="cursor: pointer;" class="d-flex align-items-center gap-1">
+                                            <input type="checkbox" class="cfg-webhook-event" value="cotizacion.enviada" {{ in_array('cotizacion.enviada', $evs) ? 'checked' : '' }}>
+                                            <span>cotizacion.enviada</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" class="btn-saas btn-saas-primary btn-sm px-3">
+                                        <i class="fas fa-save mr-1"></i> Guardar Webhook Saliente
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- TAB 5: USUARIOS & SUB-ROLES -->
+                        <div id="cfg-pane-usuarios" class="d-none">
+                            <h6 class="font-weight-bold text-uppercase small text-secondary mb-2" style="letter-spacing: 0.05em;">
+                                Cuentas de Acceso de Empresa y Roles de Asesores
+                            </h6>
+                            <p class="small text-muted mb-3">
+                                Gestiona los accesos del equipo para <strong>{{ $instancia->nombre_empresa }}</strong>.
+                            </p>
+
+                            @if($usuariosEmpresa && $usuariosEmpresa->count() > 0)
+                                <div class="table-responsive mb-3">
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Nombre</th>
+                                                <th>Correo de Acceso</th>
+                                                <th>Rol Interno</th>
+                                                <th>Visibilidad</th>
+                                                <th class="text-right">Acción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($usuariosEmpresa as $uEmp)
+                                                <tr>
+                                                    <td class="font-weight-600 align-middle">{{ $uEmp->name }}</td>
+                                                    <td class="font-mono small align-middle">{{ $uEmp->email }}</td>
+                                                    <td class="align-middle">
+                                                        <span class="badge {{ ($uEmp->sub_rol ?? 'vendedor') === 'supervisor' ? 'badge-primary' : 'badge-secondary' }}">
+                                                            {{ ucfirst($uEmp->sub_rol ?? 'vendedor') }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="small align-middle">
+                                                        {{ $uEmp->solo_asignados ? 'Solo leads asignados' : 'Todos los leads' }}
+                                                    </td>
+                                                    <td class="text-right align-middle">
+                                                        <form action="{{ route('instancias.usuarios.destroy', [$instancia->id, $uEmp->id]) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-xs btn-outline-danger"><i class="fas fa-user-times mr-1"></i> Revocar</button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endif
+
+                            <form action="{{ route('instancias.usuarios.store', $instancia->id) }}" method="POST" class="p-3" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;">
+                                @csrf
+                                <div class="small font-weight-bold text-dark mb-2"><i class="fas fa-user-plus text-primary mr-1"></i> Crear nueva cuenta de empresa</div>
+                                <div class="row">
+                                    <div class="col-md-4 form-group mb-2">
+                                        <input type="text" name="name" class="saas-input" placeholder="Nombre del usuario" required>
+                                    </div>
+                                    <div class="col-md-4 form-group mb-2">
+                                        <input type="email" name="email" class="saas-input" placeholder="Correo electrónico" required>
+                                    </div>
+                                    <div class="col-md-4 form-group mb-2">
+                                        <input type="password" name="password" class="saas-input" placeholder="Contraseña (mín. 8)" minlength="8" required>
+                                    </div>
+                                </div>
+                                <div class="row align-items-center mt-1">
+                                    <div class="col-md-4 form-group mb-2 mb-md-0">
+                                        <select name="sub_rol" class="saas-input py-1 px-2">
+                                            <option value="vendedor">Rol: Vendedor / Asesor</option>
+                                            <option value="supervisor">Rol: Supervisor de Equipo</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-5 form-group mb-2 mb-md-0">
+                                        <label class="small text-secondary mb-0 d-flex align-items-center gap-1" style="cursor: pointer;">
+                                            <input type="checkbox" name="solo_asignados" value="1">
+                                            <span>Restringir a ver solo sus leads asignados</span>
+                                        </label>
+                                    </div>
+                                    <div class="col-md-3 d-flex justify-content-end">
+                                        <button type="submit" class="btn-saas btn-saas-primary btn-sm">
+                                            <i class="fas fa-plus-circle mr-1"></i> Habilitar Acceso
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- TAB 6: PLAN & CONSUMO IA -->
+                        <div id="cfg-pane-plan" class="d-none">
+                            <h6 class="font-weight-bold text-uppercase small text-secondary mb-3" style="letter-spacing: 0.05em;">
+                                Plan Activo y Cuota Mensual de Mensajes IA (Groq LLaMA 3.3)
+                            </h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="p-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                                        <div class="small text-muted">Plan Actual:</div>
+                                        <h4 class="font-weight-bold text-dark mb-1">{{ ucfirst($planInfo['plan']) }}</h4>
+                                        <span class="badge badge-success"><i class="fas fa-check-circle mr-1"></i> Suscripción Activa</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div class="p-3" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                                        <div class="small text-muted">Consumo Mensual:</div>
+                                        <h4 class="font-weight-bold font-mono text-primary mb-1">
+                                            {{ number_format($planInfo['mensajes_ia_consumidos']) }} / {{ number_format($planInfo['limite_mensajes_ia_mes']) }}
+                                        </h4>
+                                        @php
+                                            $porcConsumo = $planInfo['limite_mensajes_ia_mes'] > 0 ? min(100, round(($planInfo['mensajes_ia_consumidos'] / $planInfo['limite_mensajes_ia_mes']) * 100)) : 0;
+                                        @endphp
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $porcConsumo }}%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Configuración desacoplada y datos iniciales JSON para toda la suite CRM -->
+    <div id="blueprint-config" 
+         class="blueprint-config-data"
+         data-csrf-token="{{ csrf_token() }}" 
+         data-store-node-url="{{ route('chatbot.node.store') }}" 
+         data-store-option-url="{{ route('chatbot.option.store') }}" 
+         data-instancia-id="{{ $instancia->id }}"></div>
+
+    <script id="chatbot-nodes-json" type="application/json">@json($nodes)</script>
+    <script id="crm-leads-json" type="application/json">@json($todosContactos)</script>
+    <script id="crm-stages-json" type="application/json">@json($etapas)</script>
+    <script id="crm-catalog-json" type="application/json">@json($catalogoProductos)</script>
+    <script id="crm-templates-json" type="application/json">@json($plantillasRapidas)</script>
+    <script id="crm-automations-json" type="application/json">@json($pipelineAutomations)</script>
+    <script id="crm-broadcasts-json" type="application/json">@json($campanasDifusion)</script>
+    <script id="crm-custom-fields-json" type="application/json">@json($camposPersonalizadosDef)</script>
+    <script id="crm-advisors-json" type="application/json">@json($usuariosEmpresa)</script>
+    <script id="crm-horario-json" type="application/json">@json($horarioAtencion)</script>
+    <script id="crm-base-conocimiento-json" type="application/json">@json($baseConocimiento)</script>
+    <script id="crm-webhook-json" type="application/json">@json($webhookSaliente)</script>
+    <script id="crm-fiscal-json" type="application/json">@json($datosFiscales)</script>
+    <script id="crm-plan-json" type="application/json">@json($planInfo)</script>
+    <script id="crm-api-token" type="text/plain">{{ $apiToken }}</script>
+@stop
+
+@section('js')
+    <script src="{{ asset('js/floating-navbar.js') }}?v={{ file_exists(public_path('js/floating-navbar.js')) ? filemtime(public_path('js/floating-navbar.js')) : time() }}"></script>
+    <script src="{{ asset('js/crm-suite.js') }}?v={{ file_exists(public_path('js/crm-suite.js')) ? filemtime(public_path('js/crm-suite.js')) : time() }}"></script>
+    @if($isAdmin)
+        <script src="{{ asset('js/prompt-simulator.js') }}?v={{ file_exists(public_path('js/prompt-simulator.js')) ? filemtime(public_path('js/prompt-simulator.js')) : time() }}"></script>
+        <script src="{{ asset('js/blueprint-drawer.js') }}?v={{ file_exists(public_path('js/blueprint-drawer.js')) ? filemtime(public_path('js/blueprint-drawer.js')) : time() }}"></script>
+        <script src="{{ asset('js/blueprint-builder.js') }}?v={{ file_exists(public_path('js/blueprint-builder.js')) ? filemtime(public_path('js/blueprint-builder.js')) : time() }}"></script>
+    @endif
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const formAjustes = document.getElementById('formAjustesInstancia');
+            const btnGuardar = document.getElementById('btnGuardarAjustes');
+            if (formAjustes && btnGuardar) {
+                const inputs = formAjustes.querySelectorAll('input:not([type="hidden"])');
+                const initialValues = {};
+                inputs.forEach(input => { initialValues[input.name] = input.value.trim(); });
+                function checkFormChanges() {
+                    let hasChanges = false;
+                    inputs.forEach(input => {
+                        if (input.value.trim() !== (initialValues[input.name] ?? '')) hasChanges = true;
+                    });
+                    btnGuardar.disabled = !hasChanges;
+                }
+                inputs.forEach(input => {
+                    input.addEventListener('input', checkFormChanges);
+                    input.addEventListener('change', checkFormChanges);
+                    input.addEventListener('keyup', checkFormChanges);
+                });
+            }
+
+            const promptTextarea = document.getElementById('live_system_prompt');
+            const btnGuardarPrompt = document.getElementById('btnGuardarPrompt');
+            if (promptTextarea && btnGuardarPrompt) {
+                const initialPrompt = promptTextarea.value;
+                function checkPromptChanges() {
+                    btnGuardarPrompt.disabled = (promptTextarea.value === initialPrompt);
+                }
+                promptTextarea.addEventListener('input', checkPromptChanges);
+                promptTextarea.addEventListener('change', checkPromptChanges);
+                promptTextarea.addEventListener('keyup', checkPromptChanges);
+            }
+        });
+    </script>
+@stop

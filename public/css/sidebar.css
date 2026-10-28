@@ -1,0 +1,140 @@
+/**
+ * Sidebar Minimalista (Efecto de fondo idéntico a la barra de navegación superior)
+ * Glassmorphism con textura translúcida, desenfoque y elevación suave
+ */
+
+.app-sidebar {
+    width: var(--sidebar-width, 240px);
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-right: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 7px 18px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    transition: box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.app-sidebar:hover {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.09), 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 24px 12px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: transparent;
+}
+
+.nav-divider {
+    height: 1px;
+    background: rgba(226, 232, 240, 0.7);
+    margin: 8px 8px;
+}
+
+/* Items de navegación con la misma estética de la barra flotante */
+.app-sidebar .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 9999px;
+    color: #64748b;
+    font-size: 0.86rem;
+    font-weight: 500;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.app-sidebar .nav-item i {
+    font-size: 15px;
+    width: 18px;
+    text-align: center;
+    color: #64748b;
+    transition: color 0.18s ease;
+}
+
+.app-sidebar .nav-item:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    text-decoration: none;
+}
+
+.app-sidebar .nav-item:hover i {
+    color: #0f172a;
+}
+
+.app-sidebar .nav-item.active {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.app-sidebar .nav-item.active i {
+    color: #0f172a;
+}
+
+/* Footer de Usuario simple con fondo translúcido coherente */
+.sidebar-user {
+    padding: 14px 16px;
+    border-top: 1px solid rgba(226, 232, 240, 0.8);
+    background: transparent !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 9999px;
+    background: #0f172a;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.btn-logout {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    transition: color 0.18s ease, transform 0.18s ease;
+}
+
+.btn-logout:hover {
+    color: #ef4444;
+}

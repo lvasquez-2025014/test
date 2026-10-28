@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('user_contexts', function (Blueprint $table) {
@@ -16,14 +13,11 @@ return new class extends Migration
             $table->string("phone_number")->unique();
             $table->string("nombre")->nullable();
             $table->string("current_node")->default("main");
-            $table->json("ai_history")->nullable(); // para el context de OpenAI 
+            $table->json("ai_history")->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('user_contexts');

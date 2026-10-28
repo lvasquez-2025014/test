@@ -1,0 +1,200 @@
+/* Barra de herramientas flotante */
+.toolbar-shadow {
+    box-shadow: 0 7px 15px rgba(0, 0, 0, .075), 0 1px 3px rgba(0, 0, 0, .045);
+}
+
+.floating-navbar-container {
+    position: fixed;
+    top: 20px;
+    bottom: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1040;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+}
+
+.floating-navbar {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    width: auto;
+    min-width: max-content;
+    padding: 0 10px;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 9999px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, width 0.2s ease;
+}
+
+.floating-context-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.floating-context-group.d-none {
+    display: none !important;
+}
+
+.floating-navbar:hover {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.tool-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 9999px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    cursor: pointer;
+    transition: background-color 0.18s ease, transform 0.18s ease, color 0.18s ease;
+    text-decoration: none;
+    outline: none;
+    font-size: 15px;
+}
+
+.tool-button i {
+    font-size: 15px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.tool-button:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.tool-button:active {
+    transform: scale(0.92);
+}
+
+.tool-button:focus-visible {
+    outline: 2px solid #a3a3a3;
+    outline-offset: 3px;
+}
+
+.tool-button.active {
+    background-color: #f1f5f9;
+    color: #0f172a;
+}
+
+.tool-button.active i {
+    color: #0f172a;
+}
+
+.tool-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: #0f172a;
+}
+
+/* Botón de acción principal (+) */
+.tool-button-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 9999px;
+    background-color: #0f172a;
+    color: #ffffff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.18s ease, transform 0.18s ease;
+    font-size: 13px;
+}
+
+.tool-button-primary i {
+    font-size: 13px;
+    line-height: 1;
+}
+
+.tool-button-primary:hover {
+    background-color: #334155;
+    color: #ffffff;
+}
+
+.tool-button-primary:active {
+    transform: scale(0.92);
+}
+
+/* Mensaje emergente de confirmación */
+.floating-feedback {
+    pointer-events: none;
+    order: 2;
+    padding: 6px 14px;
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: #334155;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.floating-feedback.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Tooltip para botones de la barra */
+.tool-button[data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: calc(100% + 8px);
+    bottom: auto;
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+}
+
+.tool-button[data-tooltip]:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .tool-button,
+    .tool-button-primary,
+    .floating-feedback {
+        transition: none !important;
+        animation: none !important;
+    }
+}

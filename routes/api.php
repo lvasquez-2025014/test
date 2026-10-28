@@ -1,31 +1,43 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OpenaiController;
 use App\Http\Controllers\whatsappController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+Route::prefix('auth')->group(function () {
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
-Route::post("/enviar-mensaje", [whatsappController::class, "enviarMensaje"]);
-
-// Recibir Mensajes
-Route::post('/webhook', [whatsappController::class, "recibirMensaje"]);
-
-// webhook Verify
-Route::get('/webhook', function(Request $request){
-    if($request->hub_verify_token === env('VERIFY_TOKEN')){
-        return $request->hub_challenge;
-    }
-    return response('Forbidden', 403);
+    Route::middleware('auth:api')->group(function () {
+        Route::get('/me', [AuthController::class, 'me']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/refresh', [AuthController::class, 'refresh']);
+    });
 });
 
-// Webhook Evolution
-Route::post('/webhook-evolution', [whatsappController::class, "recibirMensajeEvolution"]);
+Route::prefix('webhook')->middleware('throttle:120,1')->group(function () {
+    Route::get('/', [whatsappController::class, 'verificarWebhook']);
+    Route::post('/', [whatsappController::class, 'recibirWebhook']);
+});
+Route::get('/webhook', [whatsappController::class, 'verificarWebhook'])->middleware('throttle:120,1');
+Route::post('/webhook', [whatsappController::class, 'recibirWebhook'])->middleware('throttle:120,1');
 
-// APi OPEN AI
+Route::middleware(['throttle:60,1', 'auth:api'])->get('/user', [AuthController::class, 'me']);
 
-Route::post("/openai/text", [OpenaiController::class, "funRespuestaIA"]);
+Route::middleware(['throttle:60,1', 'auth:api'])->group(function () {
+    Route::post('/enviar-mensaje', [whatsappController::class, 'enviarMensaje']);
+});
+
+Route::middleware(['throttle:15,1', 'auth:api'])->group(function () {
+    Route::post('/openai/text', [OpenaiController::class, 'funRespuestaIA']);
+});
+
+// API REST v1 para Integraciones Externas (Zapier, Make, Landings, Formularios, ERPs)
+Route::prefix('v1')->middleware('throttle:120,1')->group(function () {
+    Route::get('/leads', [App\Http\Controllers\Api\CrmApiController::class, 'listarLeads']);
+    Route::post('/leads', [App\Http\Controllers\Api\CrmApiController::class, 'crearOActualizarLead']);
+    Route::post('/mensajes', [App\Http\Controllers\Api\CrmApiController::class, 'enviarMensaje']);
+});
+
+

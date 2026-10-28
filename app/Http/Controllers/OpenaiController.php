@@ -2,34 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\AiService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 
 class OpenaiController extends Controller
 {
-    
-    public function funRespuestaIA(Request $request){
-        $respuesta = Http::withHeaders([
-            'Content-Type' => "application/json",
-            'Authorization' => "Bearer "+env("TOKEN_OPENAI")
-        ])->post("https://api.openai.com/v1/chat/completions", [
-            "model" => "gpt-5",
-            "messages" => [
-                [
-                    "role" => "system",
-                    "content" => "Actua como parte del equipo de ventas del banco credito seguro responde en no más de 30 palabras."
-                ],
-                [
-                    "role" => "user",
-                    "content" => $request->mensaje
-                ],
-                
-            ]
-        ]);
+    public function __construct(
+        protected AiService $aiService
+    ) {}
+
+    public function funRespuestaIA(Request $request)
+    {
+        $user = $request->user('api') ?? $request->user('web') ?? auth()->user();
+        if (!$user || !$user->isAdmin()) {
+            return response()->json([
+                'status' => 403,
+                'error'  => 'No autorizado para consultar el motor de IA',
+            ], 403);
+        }
+
+        $mensaje = trim((string) $request->input('mensaje', ''));
+
+        if ($mensaje === '') {
+            return response()->json([
+                'status' => 400,
+                'error'  => 'El campo mensaje es obligatorio',
+            ], 400);
+        }
+
+        $respuesta = $this->aiService->obtenerRespuesta($mensaje);
 
         return response()->json([
-            "status" => $respuesta->status(),
-            "response" => $respuesta['choices'][0]['message']['content']
+            'status'   => 200,
+            'response' => $respuesta,
         ]);
     }
 }
