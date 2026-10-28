@@ -427,7 +427,7 @@
             </div>
 
             <div class="d-flex align-items-center gap-2 flex-wrap">
-                <select id="selectPipelineBotFilter" class="saas-input py-1 px-2" style="width: auto; height: 34px; font-size: 0.8rem;">
+                <select id="selectPipelineBotFilter" class="crm-topbar-select" style="width: auto;">
                     <option value="all">Todos los estados (Bot + Humano)</option>
                     <option value="bot">Solo atendidos por Bot</option>
                     <option value="human">Solo intervención Humana</option>
@@ -485,23 +485,23 @@
                     </div>
 
                     <div class="d-flex align-items-center gap-2 flex-wrap">
-                        <select id="inbox-select-estado-conv" class="saas-input py-0 px-2" style="width: auto; height: 30px; font-size: 0.76rem;" title="Estado de la conversación">
-                            <option value="abierta">🟢 Abierta</option>
-                            <option value="pendiente">🟡 Pendiente</option>
-                            <option value="resuelta">⚪ Resuelta</option>
+                        <select id="inbox-select-estado-conv" class="crm-topbar-select" title="Estado de la conversación">
+                            <option value="abierta">Abierta</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="resuelta">Resuelta</option>
                         </select>
 
-                        <select id="inbox-select-asesor" class="saas-input py-0 px-2" style="width: auto; height: 30px; font-size: 0.76rem;" title="Asignar o transferir a un asesor">
-                            <option value="">👤 Sin asignar</option>
+                        <select id="inbox-select-asesor" class="crm-topbar-select" title="Asignar o transferir a un asesor">
+                            <option value="">Sin asignar</option>
                             @foreach($usuariosEmpresa as $uEmp)
-                                <option value="{{ $uEmp->id }}">👤 {{ $uEmp->name }}</option>
+                                <option value="{{ $uEmp->id }}">{{ $uEmp->name }}</option>
                             @endforeach
                         </select>
 
-                        <button type="button" class="btn-saas btn-saas-secondary btn-sm" id="btnInboxIaResumen" title="Generar resumen ejecutivo de 3 puntos con IA">
+                        <button type="button" class="btn-saas btn-saas-secondary" id="btnInboxIaResumen" title="Generar resumen ejecutivo de 3 puntos con IA">
                             <i class="fas fa-magic text-primary mr-1"></i> Resumen IA
                         </button>
-                        <button type="button" class="btn-saas btn-saas-secondary btn-sm" id="btnInboxToggleBot" title="Alternar entre Bot automático e Intervención Humana">
+                        <button type="button" class="btn-saas btn-saas-secondary" id="btnInboxToggleBot" title="Alternar entre Bot automático e Intervención Humana">
                             <i class="fas fa-robot mr-1"></i> Bot Activo
                         </button>
                     </div>
@@ -604,7 +604,7 @@
                         <div class="row no-gutters mb-2">
                             <div class="col-7 pr-1">
                                 <label class="saas-label small mb-1">Etapa del Embudo</label>
-                                <select id="crm-select-etapa" class="saas-input py-1 px-2" style="height: 30px; font-size: 0.8rem;">
+                                <select id="crm-select-etapa" class="crm-topbar-select w-100">
                                     @foreach($etapas as $key => $meta)
                                         <option value="{{ $key }}">{{ $meta['label'] ?? $meta['nombre'] ?? $key }}</option>
                                     @endforeach
@@ -658,7 +658,7 @@
                         </div>
                         <div id="crm-tasks-container" class="mb-2"></div>
                         <div class="d-flex gap-1 mb-1">
-                            <select id="crm-select-task-type" class="saas-input py-0 px-2" style="height: 28px; font-size: 0.75rem; width: 110px;">
+                            <select id="crm-select-task-type" class="crm-topbar-select" style="min-width: 120px;">
                                 <option value="seguimiento">Seguimiento</option>
                                 <option value="llamada">Llamar</option>
                                 <option value="reunion">Reunión</option>
@@ -697,7 +697,7 @@
                         </p>
 
                         <div class="form-group mb-2">
-                            <select id="crm-select-catalog-product" class="saas-input py-1 px-2" style="height: 32px; font-size: 0.8rem;"></select>
+                            <select id="crm-select-catalog-product" class="crm-topbar-select w-100"></select>
                         </div>
                         <div class="d-flex gap-2 mb-3">
                             <input type="number" id="crm-input-product-qty" class="saas-input py-1 px-2 font-mono" style="width: 80px; height: 32px; font-size: 0.8rem;" value="1" min="1">

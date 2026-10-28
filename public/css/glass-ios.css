@@ -158,13 +158,13 @@ body {
 }
 
 /* Inputs, selects y textareas */
-.saas-input,
-.form-control,
+.saas-input:not(.crm-topbar-select):not(.crm-select),
+.form-control:not(.crm-topbar-select):not(.crm-select),
 input[type="text"],
 input[type="email"],
 input[type="password"],
 textarea,
-select {
+select:not(.crm-topbar-select):not(.crm-select) {
     border-radius: 14px !important;
     background: rgba(255, 255, 255, 0.88) !important;
     backdrop-filter: blur(10px) !important;
@@ -176,10 +176,10 @@ select {
     transition: all 0.18s ease !important;
 }
 
-.saas-input:focus,
-.form-control:focus,
+.saas-input:not(.crm-topbar-select):not(.crm-select):focus,
+.form-control:not(.crm-topbar-select):not(.crm-select):focus,
 textarea:focus,
-select:focus {
+select:not(.crm-topbar-select):not(.crm-select):focus {
     background: #ffffff !important;
     border-color: #0f172a !important;
     box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08) !important;
