@@ -215,7 +215,7 @@ class InstanciaController extends Controller
 
         $horarioAtencion = is_array($instancia->horario_atencion) ? $instancia->horario_atencion : [
             'activo'                => false,
-            'timezone'              => 'America/Mexico_City',
+            'timezone'              => 'America/Guatemala',
             'mensaje_fuera_horario' => '¡Hola! Gracias por comunicarte. En este momento nos encontramos fuera de nuestro horario de atención comercial. Te responderemos a la brevedad.',
             'dias'                  => [
                 'lunes'     => ['activo' => true, 'desde' => '09:00', 'hasta' => '18:00'],
@@ -239,8 +239,8 @@ class InstanciaController extends Controller
             'nit_rfc'              => '',
             'direccion'            => '',
             'email_contacto'       => '',
-            'moneda'               => 'USD',
-            'porcentaje_impuesto'  => 16.0,
+            'moneda'               => 'GTQ',
+            'porcentaje_impuesto'  => 12.0,
             'validez_dias_default' => 15,
             'terminos_condiciones' => 'Esta cotización es válida por 15 días calendario. Sujeta a términos y condiciones generales del servicio.',
         ];

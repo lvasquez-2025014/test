@@ -1689,10 +1689,8 @@
                                         </label>
                                         <div class="d-flex align-items-center gap-2">
                                             <span class="small text-muted">Zona Horaria:</span>
-                                            <select id="cfgHorarioTimezone" class="saas-input py-1 px-2 font-mono" style="width: 220px; height: 32px; font-size: 0.8rem;">
-                                                @foreach(['America/Mexico_City', 'America/Bogota', 'America/Lima', 'America/Santiago', 'America/Buenos_Aires', 'America/Caracas', 'America/Guatemala', 'America/Panama', 'Europe/Madrid', 'UTC'] as $tz)
-                                                    <option value="{{ $tz }}" {{ ($horarioAtencion['timezone'] ?? 'America/Mexico_City') === $tz ? 'selected' : '' }}>{{ $tz }}</option>
-                                                @endforeach
+                                            <select id="cfgHorarioTimezone" class="crm-topbar-select font-mono" style="width: auto; min-width: 220px;">
+                                                <option value="America/Guatemala" selected>America/Guatemala (GMT-6)</option>
                                             </select>
                                         </div>
                                     </div>
@@ -1781,9 +1779,9 @@
                                 <div class="row">
                                     <div class="col-md-4 form-group mb-2">
                                         <label class="saas-label small">Moneda Principal</label>
-                                        <select id="cfgFiscalMoneda" class="saas-input font-mono">
-                                            @foreach(['USD', 'EUR', 'MXN', 'COP', 'ARS', 'CLP', 'PEN'] as $curr)
-                                                <option value="{{ $curr }}" {{ ($datosFiscales['moneda'] ?? 'USD') === $curr ? 'selected' : '' }}>{{ $curr }}</option>
+                                        <select id="cfgFiscalMoneda" class="crm-topbar-select font-mono w-100">
+                                            @foreach(['GTQ' => 'GTQ (Quetzales)', 'USD' => 'USD (Dólares)'] as $currCode => $currLabel)
+                                                <option value="{{ $currCode }}" {{ ($datosFiscales['moneda'] ?? 'GTQ') === $currCode ? 'selected' : '' }}>{{ $currLabel }}</option>
                                             @endforeach
                                         </select>
                                     </div>
