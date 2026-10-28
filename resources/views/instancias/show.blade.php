@@ -46,12 +46,6 @@
         </div>
     </div>
 @stop
-                    <i class="fas fa-user-plus mr-1"></i> + Nuevo Lead
-                </button>
-            </div>
-        </div>
-    </div>
-@stop
 
 @section('content')
     <!-- SUPERDOCK FLOTANTE CON SISTEMA DUAL (Vistas Principales + Herramientas Contextuales) -->
