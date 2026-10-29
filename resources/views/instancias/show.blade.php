@@ -43,188 +43,194 @@
 @stop
 
 @section('content')
-    <!-- SUPERDOCK FLOTANTE CON SISTEMA DUAL (Vistas Principales + Herramientas Contextuales) -->
+    <!-- BARRA FLOTANTE CENTRAL: OPCIONES Y ACCIONES DE LA VISTA ACTIVA -->
     <div class="floating-navbar-container">
         <div class="floating-dock-wrapper">
-            <!-- BARRA 1: NAVEGADOR PRINCIPAL DE VISTAS (IMAGE 2) -->
-            <nav aria-label="Navegación principal de vistas" class="floating-views-capsule" id="primaryViewsNavbar">
-                <button type="button" class="view-button active" data-nav-target="dashboard" data-tooltip="Dashboard & Analítica">
-                    <i class="fas fa-chart-pie"></i>
-                    <span class="active-dot"></span>
-                </button>
-                <button type="button" class="view-button" data-nav-target="pipeline" data-tooltip="Embudo Digital (Kanban)">
-                    <i class="fas fa-columns"></i>
-                    <span class="active-dot"></span>
-                </button>
-                <button type="button" class="view-button" data-nav-target="chats" data-tooltip="Bandeja WhatsApp Omnicanal">
-                    <i class="fab fa-whatsapp"></i>
-                    <span class="active-dot"></span>
-                </button>
-                <button type="button" class="view-button" data-nav-target="tareas" data-tooltip="Centro de Tareas">
-                    <i class="fas fa-calendar-check"></i>
-                    <span class="active-dot"></span>
-                </button>
-                <button type="button" class="view-button" data-nav-target="listas" data-tooltip="Listas & Catálogo">
-                    <i class="fas fa-address-book"></i>
-                    <span class="active-dot"></span>
-                </button>
-                @if($isAdmin)
-                    <button type="button" class="view-button" data-nav-target="nodos" data-tooltip="Constructor de Flujos Bot">
-                        <i class="fas fa-project-diagram"></i>
-                        <span class="active-dot"></span>
-                    </button>
-                    <button type="button" class="view-button" data-nav-target="prompt" data-tooltip="Agente IA & RAG">
-                        <i class="fas fa-robot"></i>
-                        <span class="active-dot"></span>
-                    </button>
-                @endif
-            </nav>
+            <!-- Indicador de la Vista Actual (Navegada únicamente desde el Sidebar Lateral) -->
+            <div class="floating-view-indicator">
+                <i id="currentViewIcon" class="view-indicator-icon fas fa-chart-pie text-primary"></i>
+                <span id="currentViewTitle" class="view-indicator-label">Dashboard</span>
+            </div>
 
             <div class="floating-dock-divider"></div>
 
-            <!-- BARRA 2: ACCIONES Y HERRAMIENTAS DE LA VISTA ACTIVA -->
-            <nav aria-label="Herramientas de la vista activa" class="floating-tools-capsule" id="contextualFloatingNavbar">
+            <!-- Opciones y Herramientas Contextuales de la Vista Activa -->
+            <nav aria-label="Opciones de la vista activa" class="floating-tools-capsule" id="contextualFloatingNavbar">
 
-                <!-- Herramientas: Dashboard -->
-                <div class="floating-context-group d-none" data-view-tools="dashboard">
-                    <button type="button" class="tool-button active" data-dash-view="all" data-action="Dashboard Completo" data-tooltip="Vista Completa">
+                <!-- Opciones: Dashboard -->
+                <div class="floating-context-group" data-view-tools="dashboard">
+                    <button type="button" class="tool-button active" data-dash-view="all" data-action="Vista Completa" data-tooltip="Dashboard General">
                         <i class="fas fa-th-large"></i>
+                        <span>Todo</span>
                     </button>
-                    <button type="button" class="tool-button" data-dash-view="kpis" data-action="Indicadores KPI" data-tooltip="Solo KPIs">
+                    <button type="button" class="tool-button" data-dash-view="kpis" data-action="Métricas KPI" data-tooltip="Solo Tarjetas KPI">
                         <i class="fas fa-chart-bar"></i>
+                        <span>KPIs</span>
                     </button>
-                    <button type="button" class="tool-button" data-dash-view="funnel" data-action="Conversión por Etapa" data-tooltip="Embudo de Conversión">
+                    <button type="button" class="tool-button" data-dash-view="funnel" data-action="Embudo Comercial" data-tooltip="Embudo de Conversión">
                         <i class="fas fa-filter"></i>
+                        <span>Embudo</span>
                     </button>
-                    <button type="button" class="tool-button" data-dash-view="activity" data-action="Infraestructura & Salud" data-tooltip="Salud Operativa">
-                        <i class="fas fa-server"></i>
+                    <button type="button" class="tool-button" data-dash-view="activity" data-action="Conversaciones en Curso" data-tooltip="Triage de Chats Activos">
+                        <i class="fas fa-comments"></i>
+                        <span>En Curso</span>
                     </button>
-                    <a href="{{ route('instancias.contactos.exportar', $instancia->id) }}" class="tool-button" data-action="Exportando CSV" data-tooltip="Exportar Contactos">
+                    <a href="{{ route('instancias.contactos.exportar', $instancia->id) }}" class="tool-button" data-action="Exportar CSV" data-tooltip="Exportar Contactos">
                         <i class="fas fa-file-csv"></i>
+                        <span>Exportar</span>
                     </a>
                 </div>
 
-                <!-- Herramientas: Embudo -->
-                <div class="floating-context-group" data-view-tools="pipeline">
+                <!-- Opciones: Embudo (Pipeline) -->
+                <div class="floating-context-group d-none" data-view-tools="pipeline">
                     <button type="button" class="tool-button active" data-pipeline-filter="all" data-action="Todos los Leads" data-tooltip="Todos (Bot + Humano)">
                         <i class="fas fa-layer-group"></i>
+                        <span>Todos</span>
                     </button>
-                    <button type="button" class="tool-button" data-pipeline-filter="bot" data-action="Filtro: Solo Bot" data-tooltip="Solo Bot">
+                    <button type="button" class="tool-button" data-pipeline-filter="bot" data-action="Filtro: Solo Bot" data-tooltip="Atendidos por Bot">
                         <i class="fas fa-robot"></i>
+                        <span>Solo Bot</span>
                     </button>
-                    <button type="button" class="tool-button" data-pipeline-filter="human" data-action="Filtro: Atención Humana" data-tooltip="Solo Humano">
+                    <button type="button" class="tool-button" data-pipeline-filter="human" data-action="Filtro: Asesor Humano" data-tooltip="Esperando Asesor">
                         <i class="fas fa-user-check"></i>
+                        <span>Asesor</span>
                     </button>
-                    <button type="button" class="tool-button" data-toggle="modal" data-target="#modalCrmEtapas" data-action="Configurar Etapas" data-tooltip="Configurar Etapas">
+                    <button type="button" class="tool-button" data-toggle="modal" data-target="#modalCrmEtapas" data-action="Configurar Etapas" data-tooltip="Editar Etapas del Embudo">
                         <i class="fas fa-sliders-h"></i>
+                        <span>Etapas</span>
                     </button>
-                    <button type="button" class="tool-button" data-toggle="modal" data-target="#modalCrmAutomatizaciones" data-action="Automatizar Embudo" data-tooltip="Automatizaciones">
+                    <button type="button" class="tool-button" data-toggle="modal" data-target="#modalCrmAutomatizaciones" data-action="Automatizar Embudo" data-tooltip="Automatizaciones y Plantillas">
                         <i class="fas fa-bolt"></i>
+                        <span>Automatizar</span>
                     </button>
                     <button type="button" class="tool-button-primary" data-toggle="modal" data-target="#modalCrmNuevoLead" data-action="Nuevo Lead" title="Añadir Nuevo Lead">
                         <i class="fas fa-plus"></i>
+                        <span>+ Lead</span>
                     </button>
                 </div>
 
-                <!-- Herramientas: Chats -->
+                <!-- Opciones: Chats -->
                 <div class="floating-context-group d-none" data-view-tools="chats">
-                    <button type="button" class="tool-button active" data-chat-filter="all" data-action="Todos los Chats" data-tooltip="Todos">
+                    <button type="button" class="tool-button active" data-chat-filter="all" data-action="Todos los Chats" data-tooltip="Bandeja Completa">
                         <i class="fas fa-inbox"></i>
+                        <span>Todos</span>
                     </button>
-                    <button type="button" class="tool-button" data-chat-filter="sin_leer" data-action="Chats Sin Leer" data-tooltip="Sin Leer">
+                    <button type="button" class="tool-button" data-chat-filter="sin_leer" data-action="Chats Sin Leer" data-tooltip="Mensajes No Leídos">
                         <i class="fas fa-envelope"></i>
+                        <span>Sin Leer</span>
                     </button>
-                    <button type="button" class="tool-button" data-chat-filter="asesor" data-action="Atención Humana" data-tooltip="Humano">
+                    <button type="button" class="tool-button" data-chat-filter="asesor" data-action="Atención Asesor" data-tooltip="Chats con Asesor">
                         <i class="fas fa-user-check"></i>
+                        <span>Asesor</span>
                     </button>
-                    <button type="button" class="tool-button" data-chat-filter="cotizacion" data-action="En Cotización" data-tooltip="Cotización">
+                    <button type="button" class="tool-button" data-chat-filter="cotizacion" data-action="En Cotización" data-tooltip="Prospectos Cotizando">
                         <i class="fas fa-file-invoice-dollar"></i>
+                        <span>Cotización</span>
                     </button>
-                    <button type="button" class="tool-button" data-chat-filter="tareas" data-action="Con Tareas" data-tooltip="Con Tareas">
+                    <button type="button" class="tool-button" data-chat-filter="tareas" data-action="Con Tareas" data-tooltip="Seguimientos Pendientes">
                         <i class="fas fa-clock"></i>
+                        <span>Con Tareas</span>
                     </button>
-                    <button type="button" class="tool-button" data-chat-filter="resuelta" data-action="Chats Resueltos" data-tooltip="Resueltas">
+                    <button type="button" class="tool-button" data-chat-filter="resuelta" data-action="Chats Resueltos" data-tooltip="Conversaciones Cerradas">
                         <i class="fas fa-check-circle"></i>
+                        <span>Resueltas</span>
                     </button>
-                    <button type="button" class="tool-button" data-chat-filter="bot" data-action="Atendidos por Bot" data-tooltip="Bot">
+                    <button type="button" class="tool-button" data-chat-filter="bot" data-action="Atendidos por Bot" data-tooltip="IA Activa">
                         <i class="fas fa-robot"></i>
+                        <span>Bot</span>
                     </button>
                 </div>
 
-                <!-- Herramientas: Tareas -->
+                <!-- Opciones: Tareas -->
                 <div class="floating-context-group d-none" data-view-tools="tareas">
-                    <button type="button" class="tool-button active" data-task-view="pendientes" data-action="Tareas Pendientes" data-tooltip="Pendientes">
+                    <button type="button" class="tool-button active" data-task-view="pendientes" data-action="Tareas Pendientes" data-tooltip="Por Completar">
                         <i class="fas fa-hourglass-half"></i>
+                        <span>Pendientes</span>
                     </button>
-                    <button type="button" class="tool-button" data-task-view="completadas" data-action="Tareas Completadas" data-tooltip="Completadas">
+                    <button type="button" class="tool-button" data-task-view="completadas" data-action="Tareas Completadas" data-tooltip="Finalizadas">
                         <i class="fas fa-check-double"></i>
+                        <span>Completadas</span>
                     </button>
-                    <button type="button" class="tool-button" data-task-view="todas" data-action="Todas las Tareas" data-tooltip="Todas">
+                    <button type="button" class="tool-button" data-task-view="todas" data-action="Todas las Tareas" data-tooltip="Historial Total">
                         <i class="fas fa-list-ul"></i>
+                        <span>Todas</span>
                     </button>
                     <button type="button" class="tool-button-primary" data-task-action="new" data-action="Nueva Tarea" title="Crear Nueva Tarea">
                         <i class="fas fa-plus"></i>
+                        <span>+ Tarea</span>
                     </button>
                 </div>
 
-                <!-- Herramientas: Listas y catálogo -->
+                <!-- Opciones: Listas y catálogo -->
                 <div class="floating-context-group d-none" data-view-tools="listas">
                     <button type="button" class="tool-button active" data-list-view="contactos" data-action="Directorio de Contactos" data-tooltip="Contactos">
                         <i class="fas fa-users"></i>
+                        <span>Contactos</span>
                     </button>
                     <button type="button" class="tool-button" data-list-view="catalogo" data-action="Catálogo de Productos" data-tooltip="Catálogo">
                         <i class="fas fa-box-open"></i>
+                        <span>Catálogo</span>
                     </button>
                     <button type="button" class="tool-button" data-list-view="plantillas" data-action="Plantillas Rápidas" data-tooltip="Plantillas /">
                         <i class="fas fa-bolt"></i>
+                        <span>Plantillas</span>
                     </button>
                     <button type="button" class="tool-button" data-list-view="difusion" data-action="Difusión Masiva" data-tooltip="Difusión">
                         <i class="fas fa-bullhorn"></i>
+                        <span>Difusión</span>
                     </button>
                     <button type="button" class="tool-button" data-list-view="campos" data-action="Campos Personalizados" data-tooltip="Campos">
                         <i class="fas fa-sliders-h"></i>
-                    </button>
-                    <button type="button" class="tool-button" data-list-view="importar" data-action="Importar CSV" data-tooltip="Importar CSV">
-                        <i class="fas fa-file-import"></i>
+                        <span>Campos</span>
                     </button>
                     <button type="button" class="tool-button" data-list-view="conocimiento" data-action="Base Conocimiento IA" data-tooltip="Base IA">
                         <i class="fas fa-brain"></i>
+                        <span>Base IA</span>
                     </button>
                     <button type="button" class="tool-button" data-list-view="widget" data-action="Enlaces & Widget Web" data-tooltip="Widget Web">
                         <i class="fas fa-code"></i>
+                        <span>Widget</span>
                     </button>
-                    <a href="{{ route('instancias.contactos.exportar', $instancia->id) }}" class="tool-button" data-action="Exportando CSV" data-tooltip="Exportar CSV">
+                    <a href="{{ route('instancias.contactos.exportar', $instancia->id) }}" class="tool-button" data-action="Exportar CSV" data-tooltip="Exportar CSV">
                         <i class="fas fa-file-csv"></i>
+                        <span>Exportar</span>
                     </a>
                 </div>
 
                 @if($isAdmin)
-                    <!-- Herramientas: Flujos bot -->
+                    <!-- Opciones: Flujos bot -->
                     <div class="floating-context-group d-none" data-view-tools="nodos">
                         <button type="button" class="tool-button" data-node-tool="zoom-out" data-action="Alejar Lienzo" data-tooltip="Alejar (-)">
                             <i class="fas fa-search-minus"></i>
+                            <span>Alejar</span>
                         </button>
                         <button type="button" class="tool-button" data-node-tool="zoom-in" data-action="Acercar Lienzo" data-tooltip="Acercar (+)">
                             <i class="fas fa-search-plus"></i>
+                            <span>Acercar</span>
                         </button>
                         <button type="button" class="tool-button" data-node-tool="zoom-reset" data-action="Restablecer Vista" data-tooltip="Centrar Vista">
                             <i class="fas fa-compress-arrows-alt"></i>
+                            <span>Centrar</span>
                         </button>
                         <button type="button" class="tool-button" data-node-tool="auto-layout" data-action="Organizando Nodos" data-tooltip="Auto-Organizar">
                             <i class="fas fa-magic"></i>
+                            <span>Auto-Layout</span>
                         </button>
                         <button type="button" class="tool-button-primary" data-node-tool="add-node" data-action="Añadir Nodo" title="Añadir Nuevo Nodo">
                             <i class="fas fa-plus"></i>
+                            <span>+ Nodo</span>
                         </button>
                     </div>
 
-                    <!-- Herramientas: Agente IA -->
+                    <!-- Opciones: Agente IA -->
                     <div class="floating-context-group d-none" data-view-tools="prompt">
                         <button type="button" class="tool-button active" data-prompt-tool="focus" data-action="Editor de Prompt IA" data-tooltip="Instrucciones IA">
                             <i class="fas fa-terminal"></i>
+                            <span>Editor</span>
                         </button>
                         <button type="button" class="tool-button-primary" data-prompt-tool="save" data-action="Guardar Prompt IA" title="Guardar Entrenamiento IA">
                             <i class="fas fa-save"></i>
+                            <span>Guardar Prompt</span>
                         </button>
                     </div>
                 @endif

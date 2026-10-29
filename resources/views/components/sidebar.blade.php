@@ -18,12 +18,12 @@
 
             <div class="sidebar-category-label">OPERACIÓN COMERCIAL</div>
 
-            <a href="#dashboard" class="nav-item sidebar-tab-link" data-nav="dashboard" title="Dashboard y Analítica en Vivo">
+            <a href="#dashboard" class="nav-item sidebar-tab-link active" data-nav="dashboard" title="Dashboard y Analítica en Vivo">
                 <div class="nav-icon-wrap"><i class="fas fa-chart-pie"></i></div>
                 <span>Dashboard</span>
             </a>
 
-            <a href="#pipeline" class="nav-item sidebar-tab-link active" data-nav="pipeline" title="Embudo Digital de Ventas (Kanban)">
+            <a href="#pipeline" class="nav-item sidebar-tab-link" data-nav="pipeline" title="Embudo Digital de Ventas (Kanban)">
                 <div class="nav-icon-wrap"><i class="fas fa-columns"></i></div>
                 <span>Embudo</span>
             </a>

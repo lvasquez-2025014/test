@@ -1,11 +1,23 @@
-// Barra de herramientas flotante y cambio de vistas en el panel de instancia
+// Barra de herramientas flotante central y cambio de vistas en el panel de instancia (Vistas en Sidebar, Opciones en Centro)
 document.addEventListener('DOMContentLoaded', function () {
     const configEl = document.getElementById('blueprint-config');
     const instanciaId = configEl?.getAttribute('data-instancia-id') || '';
 
     const sidebarLinks = document.querySelectorAll('.sidebar-tab-link');
-    const viewButtons = document.querySelectorAll('.view-button[data-nav-target]');
     const contextGroups = document.querySelectorAll('.floating-context-group[data-view-tools]');
+
+    const indicatorLabel = document.getElementById('currentViewTitle');
+    const indicatorIcon = document.getElementById('currentViewIcon');
+
+    const viewMeta = {
+        'dashboard': { label: 'Dashboard', icon: 'fas fa-chart-pie' },
+        'pipeline':  { label: 'Embudo',    icon: 'fas fa-columns' },
+        'chats':     { label: 'Chats',     icon: 'fab fa-whatsapp' },
+        'tareas':    { label: 'Tareas',    icon: 'fas fa-calendar-check' },
+        'listas':    { label: 'Listas',    icon: 'fas fa-address-book' },
+        'nodos':     { label: 'Flujos Bot',icon: 'fas fa-project-diagram' },
+        'prompt':    { label: 'Agente IA', icon: 'fas fa-robot' }
+    };
 
     const panes = {
         'dashboard': document.getElementById('pane-dashboard'),
@@ -18,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     function switchTab(targetKey) {
-        let normalized = 'pipeline';
+        let normalized = 'dashboard';
         const str = (targetKey || '').toLowerCase();
         if (str.includes('dashboard') || str.includes('estadistica') || str.includes('analitica')) {
             normalized = 'dashboard';
@@ -37,28 +49,28 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (!panes[normalized]) {
-            normalized = panes['pipeline'] ? 'pipeline' : 'chats';
+            normalized = panes['dashboard'] ? 'dashboard' : 'pipeline';
         }
 
-        // Marcamos la pestaña activa en la barra lateral
+        // 1. Marcamos la pestaña activa en la barra lateral (Sidebar: Navegador exclusivo de vistas)
         sidebarLinks.forEach(item => {
             const attr = (item.getAttribute('data-nav') || '').toLowerCase();
             item.classList.toggle('active', attr === normalized);
         });
 
-        // Marcamos el botón activo en la barra flotante de vistas (Barra 1)
-        viewButtons.forEach(btn => {
-            const attr = (btn.getAttribute('data-nav-target') || '').toLowerCase();
-            btn.classList.toggle('active', attr === normalized);
-        });
+        // 2. Actualizamos el título e icono de la vista activa en la barra central
+        if (viewMeta[normalized]) {
+            if (indicatorLabel) indicatorLabel.textContent = viewMeta[normalized].label;
+            if (indicatorIcon) indicatorIcon.className = 'view-indicator-icon ' + viewMeta[normalized].icon + ' text-primary';
+        }
 
-        // Mostramos las herramientas contextuales de la vista elegida
+        // 3. Mostramos las opciones y herramientas de la vista seleccionada en la barra central
         contextGroups.forEach(group => {
             const viewKey = (group.getAttribute('data-view-tools') || '').toLowerCase();
             group.classList.toggle('d-none', viewKey !== normalized);
         });
 
-        // Activamos el contenedor de la vista
+        // 4. Activamos el contenedor de la vista
         Object.keys(panes).forEach(k => {
             if (panes[k]) {
                 panes[k].classList.toggle('active', k === normalized);
@@ -86,6 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // La navegación entre vistas ocurre exclusivamente al pulsar en el Sidebar lateral
     sidebarLinks.forEach(item => {
         item.addEventListener('click', function (e) {
             e.preventDefault();
@@ -93,15 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Clicks en la barra flotante de vistas (Barra 1 - Image 2)
-    viewButtons.forEach(btn => {
-        btn.addEventListener('click', function (e) {
-            e.preventDefault();
-            switchTab(this.getAttribute('data-nav-target'));
-        });
-    });
-
-    // Acciones de la barra flotante según la vista actual
+    // Acciones y opciones de la vista activa (Barra flotante central)
 
     // Dashboard: filtrar KPIs, embudo o actividad
     const dashButtons = document.querySelectorAll('[data-dash-view]');
@@ -246,10 +251,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Inicializar en la pestaña guardada o en el hash de la URL
+    // Inicializar en la pestaña guardada o en el hash de la URL (por defecto Dashboard)
     const initialHash = window.location.hash ? window.location.hash.substring(1) : '';
     const storedTab = instanciaId ? sessionStorage.getItem('instancia_tab_' + instanciaId) : null;
-    switchTab(initialHash || storedTab || 'pipeline');
+    switchTab(initialHash || storedTab || 'dashboard');
 
     // Toast Feedback discreto bajo la barra flotante
     const feedback = document.getElementById('floating-feedback');
